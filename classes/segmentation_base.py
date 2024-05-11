@@ -1,0 +1,291 @@
+import cv2
+import numpy as np
+
+
+class SegmentationBase:
+    def __init__(self):
+        self.crop_x = 0
+        self.crop_y = 0
+        self.crop_w = 0
+        self.crop_h = 0
+
+    def new_frame_processing(self, frame_original, draw_rect=False, draw_segm=False):
+        frame_result = frame_original.copy()
+        frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
+        ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
+
+        # Найти контуры
+        cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+        # Найти самый большой контур (прямоугольник)
+        max_area = 0
+        max_contour = None
+
+        for c in cnts:
+            area = cv2.contourArea(c)
+            if area > max_area:
+                max_area = area
+                max_contour = c
+
+        # Получить ограничивающий прямоугольник
+        x, y, w, h = cv2.boundingRect(max_contour)
+        # Условие если новый прямоугольник отличается больше, чем на 10 процентов, тогда мы заменяем значения
+        if abs((x - self.crop_x) / (x + self.crop_x)) > 0.1 or abs((y - self.crop_y) / (y + self.crop_y)) > 0.1:
+            self.crop_x, self.crop_y, self.crop_w, self.crop_h = x, y, w, h
+
+        x, y, w, h = self.crop_x, self.crop_y, self.crop_w, self.crop_h
+        cropped = frame[y:y + h, x:x + w]
+        mask = thresh[y:y + h, x:x + w]
+        # mask = cv2.bitwise_not(mask)
+        cropped[mask == 0] = 255
+
+        # frame_copy = frame.copy()
+
+        # cv2.imshow("frame", frame)
+        # Применить медианный фильтр с ядром размером 3x3
+        cropped = cv2.medianBlur(cropped, 5)
+
+        ret_th, thresh = cv2.threshold(cropped, 0, 255, cv2.THRESH_OTSU)
+        # cv2.imshow("thresh", thresh)
+
+        # Найти контуры
+        cnts = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+        # thresh = cv2.medianBlur(thresh, 5)
+
+        # Найти самый большой контур (прямоугольник)
+        max_area = 0
+        max_area_2 = 0
+        max_contour = None
+        area_list = []
+
+        for c in cnts:
+            area = cv2.contourArea(c)
+            if len(area_list) == 0 or area > area_list[-1][0]:
+                # max_area = area
+                # max_contour = c
+                area_list.append([area, c])
+
+        height_t, width_t = thresh.shape[:2]
+        sorted_area_list = sorted(area_list, key=lambda x: x[0])
+        index_delete_later = []
+        for i in range(len(sorted_area_list)):
+            if sorted_area_list[i][0] > (height_t * width_t) * 0.15:
+                # sorted_area_list.pop(i)
+                index_delete_later.append(i)
+            for j in range(len(sorted_area_list[i][1])):
+                if abs(sorted_area_list[i][1][j][0][0] - width_t) / width_t < 0.01 or abs(
+                        sorted_area_list[i][1][j][0][0] - width_t) / width_t > 0.99:
+                    index_delete_later.append(i)
+                    break
+                if abs(sorted_area_list[i][1][j][0][1] - height_t) / height_t < 0.05 or abs(
+                        sorted_area_list[i][1][j][0][1] - height_t) / height_t > 0.95:
+                    index_delete_later.append(i)
+                    break
+        temp_sorted_list = []
+        for i in range(len(sorted_area_list)):
+            if not i in index_delete_later:
+                temp_sorted_list.append(sorted_area_list[i])
+        sorted_area_list = temp_sorted_list
+
+        print(len(sorted_area_list))
+        try:
+            x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
+            if len(sorted_area_list) < 3:
+                x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
+
+        except IndexError:
+            x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
+        cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
+        # x, y, w, h = cv2.boundingRect(sorted_area_list[-3][1])
+        # cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 2)
+        # Создание графика с точками
+        # Транспонирование массива
+        cv2.drawContours(cropped, sorted_area_list[-1][1], -1, (0, 255, 0), 2)
+        # cv2.imshow("cropped", cropped)
+        xy_array = sorted_area_list[-1][1]
+
+        condition = xy_array[1] < 65
+
+        # находим индексы элементов, которые соответствуют условию
+        indices = np.where(condition)[0]
+
+        # удаляем элементы из массива A по найденным индексам
+        # xy_array = np.delete(xy_array, indices)
+        # new_xy_array = np.array([])
+        # for xy in xy_array:
+        #     if xy[0][1] > 65:
+        #         new_xy_array = np.append(new_xy_array, xy[0])
+        # # print(new_xy_array)
+        # xy_array = new_xy_array
+
+        # xy_array = np.where(xy_array[1] < 65, xy_array, xy_array )
+        reshaped_data = xy_array.reshape(-1, xy_array.shape[-1])
+        # np.savetxt('data.csv', reshaped_data, delimiter=',')
+        transposed_array = np.transpose(xy_array)
+
+        # Разделение транспонированного массива на два массива
+        split_array = np.split(transposed_array, 2)
+
+        # Преобразование каждого массива в одномерный
+        x_array: np.array = split_array[0].flatten()
+        y_array: np.array = split_array[1].flatten()
+        # plt.scatter(x_array, y_array)
+        # plt.xlabel('X')  # подпись оси x
+        # plt.ylabel('Y')  # подпись оси y
+        # plt.title('Scatter Plot')  # заголовок графика
+        # plt.grid(True)  # включение сетки
+        # plt.show()  # вывод графика
+
+        # cv2.imshow("frame_copy", cropped)
+        # cv2.imshow("frame2", thresh)
+        # Обрезка каждого канала отдельно
+        x_2, y_2, w_2, h_2 = self.crop_x, self.crop_y, self.crop_w, self.crop_h
+        # cropped_blue = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 0]  # Blue channel
+        # cropped_green = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 1]  # Green channel
+        # cropped_red = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 2]  # Red channel
+        #
+        # # Объединение каналов в цветное изображение
+        # cropped_color = cv2.merge([cropped_blue, cropped_green, cropped_red])
+        x, y, w, h = x + x_2, y + y_2, w, h
+        if draw_rect and draw_segm:
+            frame_result = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            frame_result = cv2.rectangle(frame_result.copy(), (x, y), (x + w, y + h), (0, 255, 0), 5)
+        elif draw_rect:
+            frame_result = cv2.rectangle(frame_original.copy(), (x, y), (x + w, y + h), (0, 255, 0), 5)
+        elif draw_segm:
+            frame_result = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+
+        center_bubbles_px = (x + (x + w)) / 2
+        print(center_bubbles_px)
+
+        return x_array, y_array, frame_result, center_bubbles_px
+
+    def frame_processing(self, frame_original, draw_rect=False, draw_segm=False):
+        frame_result = frame_original.copy()
+        frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
+        ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
+
+        # Найти контуры
+        cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+        # Найти самый большой контур (прямоугольник)
+        max_area = 0
+        max_contour = None
+
+        for c in cnts:
+            area = cv2.contourArea(c)
+            if area > max_area:
+                max_area = area
+                max_contour = c
+
+        # Получить ограничивающий прямоугольник
+        x, y, w, h = cv2.boundingRect(max_contour)
+        # Условие если новый прямоугольник отличается больше, чем на 10 процентов, тогда мы заменяем значения
+        if abs((x - self.crop_x) / (x + self.crop_x)) > 0.1 or abs((y - self.crop_y) / (y + self.crop_y)) > 0.1:
+            self.crop_x, self.crop_y, self.crop_w, self.crop_h = x, y, w, h
+
+        x, y, w, h = self.crop_x, self.crop_y, self.crop_w, self.crop_h
+        cropped = frame[y:y + h, x:x + w]
+        mask = thresh[y:y + h, x:x + w]
+        # mask = cv2.bitwise_not(mask)
+        cropped[mask == 0] = 255
+
+        # frame_copy = frame.copy()
+
+        # cv2.imshow("frame", frame)
+        # Применить медианный фильтр с ядром размером 3x3
+        cropped = cv2.medianBlur(cropped, 5)
+
+        ret_th, thresh = cv2.threshold(cropped, 0, 255, cv2.THRESH_OTSU)
+
+        # Найти контуры
+        cnts = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+        # thresh = cv2.medianBlur(thresh, 5)
+
+        # Найти самый большой контур (прямоугольник)
+        max_area = 0
+        max_area_2 = 0
+        max_contour = None
+        area_list = []
+
+        for c in cnts:
+            area = cv2.contourArea(c)
+            if len(area_list) == 0 or area > area_list[-1][0]:
+                # max_area = area
+                # max_contour = c
+                area_list.append([area, c])
+
+        sorted_area_list = sorted(area_list, key=lambda x: x[0])
+        try:
+            x, y, w, h = cv2.boundingRect(sorted_area_list[-3][1])
+            if len(sorted_area_list) < 3:
+                x, y, w, h = cv2.boundingRect(sorted_area_list[-2][1])
+
+        except IndexError:
+            x, y, w, h = cv2.boundingRect(sorted_area_list[0][1])
+        cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
+        # x, y, w, h = cv2.boundingRect(sorted_area_list[-3][1])
+        # cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 2)
+        # Создание графика с точками
+        # Транспонирование массива
+        cv2.drawContours(cropped, sorted_area_list[-3][1], -1, (0, 255, 0), 2)
+        xy_array = sorted_area_list[-3][1]
+
+        condition = xy_array[1] < 65
+
+        # находим индексы элементов, которые соответствуют условию
+        indices = np.where(condition)[0]
+
+        # удаляем элементы из массива A по найденным индексам
+        # xy_array = np.delete(xy_array, indices)
+        # new_xy_array = np.array([])
+        # for xy in xy_array:
+        #     if xy[0][1] > 65:
+        #         new_xy_array = np.append(new_xy_array, xy[0])
+        # # print(new_xy_array)
+        # xy_array = new_xy_array
+
+        # xy_array = np.where(xy_array[1] < 65, xy_array, xy_array )
+        reshaped_data = xy_array.reshape(-1, xy_array.shape[-1])
+        # np.savetxt('data.csv', reshaped_data, delimiter=',')
+        transposed_array = np.transpose(xy_array)
+
+        # Разделение транспонированного массива на два массива
+        split_array = np.split(transposed_array, 2)
+
+        # Преобразование каждого массива в одномерный
+        x_array: np.array = split_array[0].flatten()
+        y_array: np.array = split_array[1].flatten()
+        # plt.scatter(x_array, y_array)
+        # plt.xlabel('X')  # подпись оси x
+        # plt.ylabel('Y')  # подпись оси y
+        # plt.title('Scatter Plot')  # заголовок графика
+        # plt.grid(True)  # включение сетки
+        # plt.show()  # вывод графика
+
+        # cv2.imshow("frame_copy", cropped)
+        # cv2.imshow("frame2", thresh)
+        # Обрезка каждого канала отдельно
+        x_2, y_2, w_2, h_2 = self.crop_x, self.crop_y, self.crop_w, self.crop_h
+        # cropped_blue = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 0]  # Blue channel
+        # cropped_green = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 1]  # Green channel
+        # cropped_red = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 2]  # Red channel
+        #
+        # # Объединение каналов в цветное изображение
+        # cropped_color = cv2.merge([cropped_blue, cropped_green, cropped_red])
+        x, y, w, h = x + x_2, y + y_2, w, h
+        if draw_rect and draw_segm:
+            frame_result = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            frame_result = cv2.rectangle(frame_result.copy(), (x, y), (x + w, y + h), (0, 255, 0), 5)
+        elif draw_rect:
+            frame_result = cv2.rectangle(frame_original.copy(), (x, y), (x + w, y + h), (0, 255, 0), 5)
+        elif draw_segm:
+            frame_result = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+
+        center_bubbles_px = abs(x - (x + w)) / 2
+
+        return x_array, y_array, frame_result, center_bubbles_px
