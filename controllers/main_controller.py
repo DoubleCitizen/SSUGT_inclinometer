@@ -3,6 +3,7 @@ import threading
 
 from PyQt5.QtWidgets import QMainWindow
 
+from classes.GlobalController import GlobalController
 from classes.NivelTool import NivelTool
 from classes.stream_controller import StreamController
 from dialogs.dialog_linear_reg import InputDialog
@@ -14,6 +15,11 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         super(Ui_MainWindowController, self).__init__()
         self.setupUi(self)
         self.segmentation: StreamController | None = None
+        GlobalController.set_checkBox_segmentaion_show(self.checkBox_segmentaion_show)
+        GlobalController.set_checkBox_view_points(self.checkBox_view_points)
+        GlobalController.set_checkBox_enable_record(self.checkBox_enable_record)
+        GlobalController.set_checkBox_rectangle_show(self.checkBox_rectangle_show)
+        GlobalController.set_spinBox_points(self.spinBox_points)
 
     def closeEvent(self, event):
         # Здесь можно выполнить необходимые действия перед закрытием
@@ -26,10 +32,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         self.segmentation = None
 
     def start_stream(self, cap):
-        self.segmentation = StreamController(cap, self.graphicsView, self.label_value,
-                                             self.checkBox_rectangle_show,
-                                             self.checkBox_segmentaion_show,
-                                             self.checkBox_enable_record)
+        self.segmentation = StreamController(cap, self.graphicsView, self.label_value)
         self.segmentation.start_stream()
 
     def stop_stream(self):

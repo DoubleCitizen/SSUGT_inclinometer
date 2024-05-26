@@ -9,6 +9,7 @@ from PyQt5.QtCore import Q_ARG, QMetaObject
 from PyQt5.QtWidgets import QLabel, QCheckBox
 from PyQt5 import QtCore
 
+from classes.GlobalController import GlobalController
 from classes.NivelTool import NivelTool
 from classes.math_module import MathModule
 from classes.segmentation_base import SegmentationBase
@@ -19,8 +20,7 @@ from widgets.qgraphicsviewplot import QGraphicsViewPlot
 
 
 class StreamController:
-    def __init__(self, cap, graphics_view, label_value, checkBox_rectangle_show, checkBox_segmentaion_show,
-                 checkBox_enable_record):
+    def __init__(self, cap, graphics_view, label_value):
         self.cap = cap
         self.label_value: QLabel = label_value
         # Получить общие кадры и FPS
@@ -28,9 +28,6 @@ class StreamController:
         self.fps = cap.get(cv2.CAP_PROP_FPS)
         self.graphics_view: QGraphicsViewVideo = graphics_view
         self.video_is_started = False
-        self.checkBox_rectangle_show: QCheckBox = checkBox_rectangle_show
-        self.checkBox_segmentaion_show: QCheckBox = checkBox_segmentaion_show
-        self.checkBox_enable_record: QCheckBox = checkBox_enable_record
         self.segmentation = SegmentationBase()
         self.video_saver = VideoSaver()
         self.file_saver = FileSaver()
@@ -50,14 +47,13 @@ class StreamController:
             height, width = frame.shape[:2]
             fps = self.cap.get(cv2.CAP_PROP_FPS)
             center_bubbles_px = None
+            points = None
 
             if not ret:
                 break
 
             try:
-                x_array, y_array, image, center_bubbles_px = self.segmentation.new_frame_processing(frame,
-                                                                                                    draw_rect=self.checkBox_rectangle_show.isChecked(),
-                                                                                                    draw_segm=self.checkBox_segmentaion_show.isChecked())
+                points, image, center_bubbles_px = self.segmentation.new_frame_processing(frame)
                 try:
                     with open('data/params_linear_reg.json', 'r') as file:
                         data_json = json.loads(file.read())
@@ -67,7 +63,8 @@ class StreamController:
                     self.label_value.setText(f"ВИМ: {(center_bubbles_px * value_a) + value_b}{units}")
                 except:
                     self.label_value.setText(f"ВИМ: {center_bubbles_px}пикс.")
-                if self.checkBox_rectangle_show.isChecked() or self.checkBox_segmentaion_show.isChecked():
+
+                if GlobalController.is_draw_rectangle() or GlobalController.is_segmentaion_show():
                     # frame = cv2.cvtColor(crop_image, cv2.COLOR_GRAY2BGR)
                     frame = image
                     # cv2.imshow("crop_image", crop_image)
@@ -89,20 +86,20 @@ class StreamController:
                 print(e)
                 # self.label_status.setText("Пузырек не удалось обнаружить")
 
-            if self.video_saver.get_out() is None and self.checkBox_enable_record.isChecked() and self.video_saver.get_record_status() is False:
+            if self.video_saver.get_out() is None and GlobalController.is_recording() and self.video_saver.get_record_status() is False:
                 self.video_saver.initialize(
                     fps=fps,
                     width=width,
                     height=height
                 )
-                self.file_saver.initialize(headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t'],
+                self.file_saver.initialize(headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'points'],
                                            sep=';')
-            if self.checkBox_enable_record.isChecked():
+            if GlobalController.is_recording():
                 self.video_saver.write_frame(frame_original)
                 current_time = datetime.now()
                 formatted_time = current_time.strftime("%H:%M:%S.%f")
                 self.file_saver.write_data(
-                    [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t])
+                    [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(points.tolist())])
             else:
                 self.video_saver.release()
 

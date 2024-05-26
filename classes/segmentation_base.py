@@ -1,5 +1,8 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
+
+from classes.GlobalController import GlobalController
 
 
 class SegmentationBase:
@@ -9,7 +12,7 @@ class SegmentationBase:
         self.crop_w = 0
         self.crop_h = 0
 
-    def new_frame_processing(self, frame_original, draw_rect=False, draw_segm=False):
+    def new_frame_processing(self, frame_original):
         frame_result = frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
         ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
@@ -55,16 +58,11 @@ class SegmentationBase:
         # thresh = cv2.medianBlur(thresh, 5)
 
         # Найти самый большой контур (прямоугольник)
-        max_area = 0
-        max_area_2 = 0
-        max_contour = None
         area_list = []
 
         for c in cnts:
             area = cv2.contourArea(c)
             if len(area_list) == 0 or area > area_list[-1][0]:
-                # max_area = area
-                # max_contour = c
                 area_list.append([area, c])
 
         height_t, width_t = thresh.shape[:2]
@@ -72,7 +70,6 @@ class SegmentationBase:
         index_delete_later = []
         for i in range(len(sorted_area_list)):
             if sorted_area_list[i][0] > (height_t * width_t) * 0.15:
-                # sorted_area_list.pop(i)
                 index_delete_later.append(i)
             for j in range(len(sorted_area_list[i][1])):
                 if abs(sorted_area_list[i][1][j][0][0] - width_t) / width_t < 0.01 or abs(
@@ -98,31 +95,12 @@ class SegmentationBase:
         except IndexError:
             x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
         cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
-        # x, y, w, h = cv2.boundingRect(sorted_area_list[-3][1])
-        # cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 2)
         # Создание графика с точками
         # Транспонирование массива
         cv2.drawContours(cropped, sorted_area_list[-1][1], -1, (0, 255, 0), 2)
         # cv2.imshow("cropped", cropped)
         xy_array = sorted_area_list[-1][1]
 
-        condition = xy_array[1] < 65
-
-        # находим индексы элементов, которые соответствуют условию
-        indices = np.where(condition)[0]
-
-        # удаляем элементы из массива A по найденным индексам
-        # xy_array = np.delete(xy_array, indices)
-        # new_xy_array = np.array([])
-        # for xy in xy_array:
-        #     if xy[0][1] > 65:
-        #         new_xy_array = np.append(new_xy_array, xy[0])
-        # # print(new_xy_array)
-        # xy_array = new_xy_array
-
-        # xy_array = np.where(xy_array[1] < 65, xy_array, xy_array )
-        reshaped_data = xy_array.reshape(-1, xy_array.shape[-1])
-        # np.savetxt('data.csv', reshaped_data, delimiter=',')
         transposed_array = np.transpose(xy_array)
 
         # Разделение транспонированного массива на два массива
@@ -131,36 +109,41 @@ class SegmentationBase:
         # Преобразование каждого массива в одномерный
         x_array: np.array = split_array[0].flatten()
         y_array: np.array = split_array[1].flatten()
-        # plt.scatter(x_array, y_array)
-        # plt.xlabel('X')  # подпись оси x
-        # plt.ylabel('Y')  # подпись оси y
-        # plt.title('Scatter Plot')  # заголовок графика
-        # plt.grid(True)  # включение сетки
-        # plt.show()  # вывод графика
+        merged_array = np.hstack((x_array.reshape(-1, 1), y_array.reshape(-1, 1)))
+        # Получаем индексы отсортированных значений x
+        sorted_indices = np.argsort(merged_array[:, 0])
 
-        # cv2.imshow("frame_copy", cropped)
-        # cv2.imshow("frame2", thresh)
-        # Обрезка каждого канала отдельно
+        # Сортируем merged_array по значениям x
+        sorted_merged_array = merged_array[sorted_indices]
+
         x_2, y_2, w_2, h_2 = self.crop_x, self.crop_y, self.crop_w, self.crop_h
-        # cropped_blue = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 0]  # Blue channel
-        # cropped_green = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 1]  # Green channel
-        # cropped_red = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 2]  # Red channel
-        #
-        # # Объединение каналов в цветное изображение
-        # cropped_color = cv2.merge([cropped_blue, cropped_green, cropped_red])
+
         x, y, w, h = x + x_2, y + y_2, w, h
-        if draw_rect and draw_segm:
-            frame_result = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-            frame_result = cv2.rectangle(frame_result.copy(), (x, y), (x + w, y + h), (0, 255, 0), 5)
-        elif draw_rect:
-            frame_result = cv2.rectangle(frame_original.copy(), (x, y), (x + w, y + h), (0, 255, 0), 5)
-        elif draw_segm:
-            frame_result = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        new_frame = None
+        if GlobalController.is_segmentaion_show():
+            new_frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        if GlobalController.is_draw_rectangle():
+            if new_frame is None:
+                new_frame = cv2.rectangle(frame_original, (x, y), (x + w, y + h), (0, 255, 0), 5)
+            else:
+                new_frame = cv2.rectangle(new_frame, (x, y), (x + w, y + h), (0, 255, 0), 5)
+        if GlobalController.is_draw_points():
+            if new_frame is None:
+                new_frame = frame_original
+
+            for i in range(0, x_array.shape[0], GlobalController.get_spinBox_points().value()):
+                x_cir = x_array[i] + x_2
+                y_cir = y_array[i] + y_2
+                radius = 5
+                color = (255, 0, 0)
+                thickness = 2
+                new_frame = cv2.circle(new_frame, (x_cir, y_cir), radius, color, thickness)
+        if new_frame is not None:
+            frame_result = new_frame
 
         center_bubbles_px = (x + (x + w)) / 2
-        print(center_bubbles_px)
 
-        return x_array, y_array, frame_result, center_bubbles_px
+        return sorted_merged_array, frame_result, center_bubbles_px
 
     def frame_processing(self, frame_original, draw_rect=False, draw_segm=False):
         frame_result = frame_original.copy()
