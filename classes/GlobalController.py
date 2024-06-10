@@ -7,6 +7,21 @@ class GlobalController:
     _checkBox_enable_record: None | QCheckBox = None
     _checkBox_view_points: None | QCheckBox = None
     _spinBox_points: None | QSpinBox = None
+    _video_capture_source = None
+    _lineEdit_source_video = None
+
+    @classmethod
+    def set_lineEdit_source_video(cls, value):
+        cls._lineEdit_source_video = value
+
+    @classmethod
+    def set_video_capture_source(cls, value):
+        cls._video_capture_source = value
+        cls._lineEdit_source_video.setText(value)
+
+    @classmethod
+    def get_video_capture_source(cls):
+        return cls._video_capture_source
 
     @classmethod
     def set_spinBox_points(cls, value):
