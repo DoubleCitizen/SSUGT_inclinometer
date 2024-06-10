@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QMainWindow
 from classes.GlobalController import GlobalController
 from classes.NivelTool import NivelTool
 from classes.stream_controller import StreamController
+from dialogs.dialog_esp32 import Esp32Dialog
 from dialogs.dialog_linear_reg import InputDialog
 from ui import main
 
@@ -20,6 +21,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         GlobalController.set_checkBox_enable_record(self.checkBox_enable_record)
         GlobalController.set_checkBox_rectangle_show(self.checkBox_rectangle_show)
         GlobalController.set_spinBox_points(self.spinBox_points)
+        GlobalController.set_lineEdit_source_video(self.lineEdit_source_video)
 
     def closeEvent(self, event):
         # Здесь можно выполнить необходимые действия перед закрытием
@@ -52,10 +54,15 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         NivelTool.set_label_nivel_220(self.label_nivel)
         self.menu_tools.aboutToShow.connect(self.update_list_com_ports)
         self.action_dialog_regres.triggered.connect(self.open_dialog_parameters_reg)
+        self.action_esp32.triggered.connect(self.open_dialog_esp32)
+
+    def open_dialog_esp32(self):
+        dialog = Esp32Dialog()
+        dialog.exec()
 
     def open_dialog_parameters_reg(self):
         dialog = InputDialog()
-        if dialog.exec_():
+        if dialog.exec():
             print('Данные сохранены')
         else:
             print('Данные отменены')
