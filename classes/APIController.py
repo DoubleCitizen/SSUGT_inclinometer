@@ -12,7 +12,7 @@ class APIController:
         hsv_color = colorsys.rgb_to_hsv(*cls._color_rgb)
         h, s, v = hsv_color
         try:
-            requests.get(f"{cls._ip}/led?brig={v}&h={h}&s={s}")
+            requests.get(f"http://{cls._ip}/led?brig={v}&h={h}&s={s}")
         except:
             pass
 
