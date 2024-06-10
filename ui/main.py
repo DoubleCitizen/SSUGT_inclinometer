@@ -120,8 +120,11 @@ class Ui_MainWindow(object):
         self.action5.setObjectName("action5")
         self.action_dialog_regres = QtWidgets.QAction(MainWindow)
         self.action_dialog_regres.setObjectName("action_dialog_regres")
+        self.action_esp32 = QtWidgets.QAction(MainWindow)
+        self.action_esp32.setObjectName("action_esp32")
         self.menu_tools.addAction(self.menu_Nivel_220.menuAction())
         self.menu_tools.addAction(self.action_dialog_regres)
+        self.menu_tools.addAction(self.action_esp32)
         self.menubar.addAction(self.menu_tools.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -142,4 +145,5 @@ class Ui_MainWindow(object):
         self.menu_Nivel_220.setTitle(_translate("MainWindow", "Подключить Nivel 220"))
         self.action5.setText(_translate("MainWindow", "5"))
         self.action_dialog_regres.setText(_translate("MainWindow", "Изменить параметры линейной регрессии"))
+        self.action_esp32.setText(_translate("MainWindow", "Подключить esp32"))
 from widgets.graphicsviewvideo import QGraphicsViewVideo

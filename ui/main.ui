@@ -224,6 +224,7 @@
     </widget>
     <addaction name="menu_Nivel_220"/>
     <addaction name="action_dialog_regres"/>
+    <addaction name="action_esp32"/>
    </widget>
    <addaction name="menu_tools"/>
   </widget>
@@ -236,6 +237,11 @@
   <action name="action_dialog_regres">
    <property name="text">
     <string>Изменить параметры линейной регрессии</string>
+   </property>
+  </action>
+  <action name="action_esp32">
+   <property name="text">
+    <string>Подключить esp32</string>
    </property>
   </action>
  </widget>
