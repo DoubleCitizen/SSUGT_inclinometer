@@ -93,16 +93,20 @@ class Esp32Dialog(QDialog):
             os.makedirs(folder_path)
 
     def load(self):
-        json_data = ConfigController("data/dialog_esp32.json").load()
-        list_widget_ip_addresses_info = json_data['list_widget_ip_addresses_info']
-        for ip_address in list_widget_ip_addresses_info:
-            self.list_widget_ip_addresses.addItem(ip_address)
-        self.lineEdit_placeholder.setText(json_data['lineEdit_placeholder_text'])
-        self.lineEdit_stream.setText(json_data['lineEdit_stream_text'])
-        rgb = json_data.get('rgb', (0, 0, 0))
-        if rgb is None:
-            rgb = (0, 0, 0)
-        self.color_widget.setStyleSheet(f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]})")
+        self.create_directory('data')
+        try:
+            json_data = ConfigController("data/dialog_esp32.json").load()
+            list_widget_ip_addresses_info = json_data['list_widget_ip_addresses_info']
+            for ip_address in list_widget_ip_addresses_info:
+                self.list_widget_ip_addresses.addItem(ip_address)
+            self.lineEdit_placeholder.setText(json_data['lineEdit_placeholder_text'])
+            self.lineEdit_stream.setText(json_data['lineEdit_stream_text'])
+            rgb = json_data.get('rgb', (0, 0, 0))
+            if rgb is None:
+                rgb = (0, 0, 0)
+            self.color_widget.setStyleSheet(f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]})")
+        except:
+            pass
 
     def save(self):
         self.create_directory('data')
