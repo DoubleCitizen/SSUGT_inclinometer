@@ -71,12 +71,11 @@ class Esp32Dialog(QDialog):
         self.load()
 
     def openColorDialog(self):
-        self.color_dialog.setOption(QColorDialog.ShowAlphaChannel, False)
         color = self.color_dialog.getColor()
         rgb = color.getRgb()[:-1]
         APIController.set_color_rgb(rgb)
-        self.color_widget.setStyleSheet(f"background-color: rgb({int(rgb[0])}, {int(rgb[1])}, {int(rgb[2])})")
         self.save()
+        self.color_widget.setStyleSheet(f"background-color: rgb({int(rgb[0])}, {int(rgb[1])}, {int(rgb[2])})")
 
     @staticmethod
     def get_all_texts(list_widget):
@@ -107,28 +106,30 @@ class Esp32Dialog(QDialog):
 
     def save(self):
         self.create_directory('data')
+        config_controller = ConfigController("data/dialog_esp32.json")
+        json_data = config_controller.load()
         list_widget_ip_addresses_info = self.get_all_texts(self.list_widget_ip_addresses)
         lineEdit_placeholder_text = self.lineEdit_placeholder.text()
         lineEdit_stream_text = self.lineEdit_stream.text()
         rgb = APIController.get_color_rgb()
 
-        json_data = {
+        json_data.update({
             "list_widget_ip_addresses_info": list_widget_ip_addresses_info,
             "lineEdit_placeholder_text": lineEdit_placeholder_text,
             "lineEdit_stream_text": lineEdit_stream_text,
-            "rgb": rgb
-        }
+        })
+        if rgb is not None:
+            json_data.update({"rgb": rgb})
 
-        config_controller = ConfigController("data/dialog_esp32.json")
         config_controller.save(json_data)
 
         # self.color_dialog.setCo
 
     def update_video_capture_info(self):
+        self.save()
         APIController.set_ip(self.lineEdit_placeholder.text() + "/")
         video_capture = self.lineEdit_placeholder.text() + self.lineEdit_stream.text()
         GlobalController.set_video_capture_source(video_capture)
-        self.save()
 
     def connect_ip(self):
         network_info = self.list_widget_ip_addresses.currentItem().text().split('\t')
