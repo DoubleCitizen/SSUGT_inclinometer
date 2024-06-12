@@ -136,8 +136,12 @@ class Esp32Dialog(QDialog):
         GlobalController.set_video_capture_source(video_capture)
 
     def connect_ip(self):
-        network_info = self.list_widget_ip_addresses.currentItem().text().split('\t')
-        ip = network_info[0]
+        try:
+            network_info = self.list_widget_ip_addresses.currentItem().text().split('\t')[0]
+        except:
+            network_info = self.lineEdit_placeholder.text()
+            network_info = network_info.replace("http://", "")
+        ip = network_info
         self.lineEdit_placeholder.setText(f"http://{ip}")
         self.save()
 
