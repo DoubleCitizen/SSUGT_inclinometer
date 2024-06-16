@@ -1,0 +1,1 @@
+pyinstaller --noconsole --onefile --copy-metadata pyqt5_plugins --copy-metadata qt5_tools --copy-metadata qt5_applications --hidden-import qt5_tools --collect-submodules qt5_applications --collect-submodules pyqt5_plugins --hidden-import=PyQt5.QtDesigner run.py
