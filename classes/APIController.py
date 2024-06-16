@@ -9,10 +9,24 @@ class APIController:
     @classmethod
     def set_color_rgb(cls, rgb):
         cls._color_rgb = rgb
-        hsv_color = colorsys.rgb_to_hsv(*cls._color_rgb)
-        h, s, v = hsv_color
+        print(rgb)
+        # hsv_color = colorsys.rgb_to_hsv(*cls._color_rgb)
+        # h, s, v = hsv_color
+        h, s, v = [x for x in colorsys.rgb_to_hsv(cls._color_rgb[0]/255,cls._color_rgb[1]/255,cls._color_rgb[2]/255)]
+        h *= 255
+        s *= 255
+        v *= 255
         try:
-            requests.get(f"http://{cls._ip}/led?brig={v}&h={h}&s={s}")
+            print(f"rgb = {rgb}")
+            print(f"hsv = {h} {s} {v}")
+            requests.get(f"http://{cls._ip}/led?brig={int(v)}&h={int(h)}&s={int(s)}")
+        except:
+            pass
+
+    @classmethod
+    def get_name(cls):
+        try:
+            requests.get(f"http://{cls._ip}/get_name")
         except:
             pass
 
@@ -38,4 +52,3 @@ class APIController:
         hsv_color = colorsys.rgb_to_hsv(*rgb_color)
         h, s, v = hsv_color
         requests.get(f"{cls._ip}/led?brig={v}&h={h}&s={s}")
-
