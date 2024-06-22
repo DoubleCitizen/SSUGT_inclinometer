@@ -36,7 +36,7 @@ class VideoSaver:
         current_directory = os.getcwd()
         self.create_directory(current_directory.replace('\\', '/') + '/data')
 
-        filename = current_directory + "/data/" + formatted_time + ".mp4"
+        filename = current_directory + "/data/" + formatted_time + ".avi"
 
         # fourcc = cv2.VideoWriter_fourcc(*'avc1')
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
