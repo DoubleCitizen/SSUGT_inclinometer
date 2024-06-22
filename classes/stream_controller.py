@@ -47,7 +47,7 @@ class StreamController:
             height, width = frame.shape[:2]
             fps = self.cap.get(cv2.CAP_PROP_FPS)
             center_bubbles_px = None
-            points = None
+            points = np.array([])
 
             if not ret:
                 break
