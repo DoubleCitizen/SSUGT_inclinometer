@@ -38,7 +38,8 @@ class VideoSaver:
 
         filename = current_directory + "/data/" + formatted_time + ".mp4"
 
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        # fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         self._out = cv2.VideoWriter(filename, fourcc, fps, (width, height))
 
     def write_frame(self, frame):
