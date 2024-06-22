@@ -222,11 +222,17 @@ class Esp32Dialog(QDialog):
                 q.put((ip, result))
         except:
             q.put(None)
-
+    @staticmethod
+    def get_local_ip():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))  # Google's public DNS
+        local_ip = s.getsockname()
+        s.close()
+        return local_ip
     def get_list_network(self):
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
-        subnet = local_ip.rsplit('.', 1)
+        # hostname = socket.gethostname()
+        # local_ip = socket.gethostbyname(hostname)
+        subnet = self.get_local_ip()[0].rsplit('.', 1)
         clients = self.scan_network(subnet[0])
         return clients
 
