@@ -233,6 +233,7 @@ class Esp32Dialog(QDialog):
     def refresh_ip_info(self):
         self.list_widget_ip_addresses.clear()
         clients = self.get_list_network()
+        clients = [_ for _ in clients if _ is not None]
         # self.list_widget_ip_addresses.addItem
         for client in clients:
             ip = client[0]
