@@ -11,6 +11,7 @@ from PyQt5 import QtCore
 
 from classes.GlobalController import GlobalController
 from classes.NivelTool import NivelTool
+from classes.coordinate_system_offset import CoordinateSystemOffset
 from classes.math_module import MathModule
 from classes.segmentation_base import SegmentationBase
 from classes.value_saver import FileSaver
@@ -53,7 +54,10 @@ class StreamController:
                 break
 
             try:
-                points, image, center_bubbles_px = self.segmentation.new_frame_processing(frame)
+                image = frame
+                points, image, center_bubbles_px = self.segmentation.new_frame_processing(image)
+                CoordinateSystemOffset.set_temp_start_position(center_bubbles_px)
+                points, image, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, image, center_bubbles_px)
                 try:
                     with open('data/params_linear_reg.json', 'r') as file:
                         data_json = json.loads(file.read())
@@ -64,9 +68,8 @@ class StreamController:
                 except:
                     self.label_value.setText(f"ВИМ: {center_bubbles_px}пикс.")
 
-                if GlobalController.is_draw_rectangle() or GlobalController.is_segmentaion_show():
+                # if GlobalController.is_draw_rectangle() or GlobalController.is_segmentaion_show():
                     # frame = cv2.cvtColor(crop_image, cv2.COLOR_GRAY2BGR)
-                    frame = image
                     # cv2.imshow("crop_image", crop_image)
                 # math_module = MathModule(x_array, y_array)
 
@@ -105,7 +108,7 @@ class StreamController:
 
             key = cv2.waitKey(1)
             QMetaObject.invokeMethod(self.graphics_view, "image_cv",
-                                     Q_ARG(np.ndarray, frame))
+                                     Q_ARG(np.ndarray, image))
 
             if key == ord('q'):
                 break

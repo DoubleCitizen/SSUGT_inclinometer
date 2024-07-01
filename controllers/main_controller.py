@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QMainWindow
 
 from classes.GlobalController import GlobalController
 from classes.NivelTool import NivelTool
+from classes.coordinate_system_offset import CoordinateSystemOffset
 from classes.stream_controller import StreamController
 from dialogs.dialog_esp32 import Esp32Dialog
 from dialogs.dialog_linear_reg import InputDialog
@@ -22,12 +23,14 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         GlobalController.set_checkBox_rectangle_show(self.checkBox_rectangle_show)
         GlobalController.set_spinBox_points(self.spinBox_points)
         GlobalController.set_lineEdit_source_video(self.lineEdit_source_video)
+        GlobalController.set_checkBox_start_position(self.checkBox_start_position)
 
     def closeEvent(self, event):
         # Здесь можно выполнить необходимые действия перед закрытием
         NivelTool.close_modem()
         self.stop_stream()
         print("hello world!")
+
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.add_functions()
@@ -45,6 +48,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
     def add_functions(self):
         self.pushButton_apply_source.clicked.connect(lambda: self.apply_source())
         self.pushButton_stop_stream.clicked.connect(lambda: self.stop_stream())
+        self.pushButton_start_position.clicked.connect(lambda: CoordinateSystemOffset.apply_start_position())
 
         self.add_actions()
         # self.checkBox_enable_record.clicked.connect(lambda self.)
