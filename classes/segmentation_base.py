@@ -109,14 +109,18 @@ class SegmentationBase:
         # Преобразование каждого массива в одномерный
         x_array: np.array = split_array[0].flatten()
         y_array: np.array = split_array[1].flatten()
+
+        x_2, y_2, w_2, h_2 = self.crop_x, self.crop_y, self.crop_w, self.crop_h
+
+        x_array += x_2
+        y_array += y_2
+
         merged_array = np.hstack((x_array.reshape(-1, 1), y_array.reshape(-1, 1)))
         # Получаем индексы отсортированных значений x
         sorted_indices = np.argsort(merged_array[:, 0])
 
         # Сортируем merged_array по значениям x
         sorted_merged_array = merged_array[sorted_indices]
-
-        x_2, y_2, w_2, h_2 = self.crop_x, self.crop_y, self.crop_w, self.crop_h
 
         x, y, w, h = x + x_2, y + y_2, w, h
         new_frame = None
@@ -132,8 +136,8 @@ class SegmentationBase:
                 new_frame = frame_original
 
             for i in range(0, x_array.shape[0], GlobalController.get_spinBox_points().value()):
-                x_cir = x_array[i] + x_2
-                y_cir = y_array[i] + y_2
+                x_cir = x_array[i]
+                y_cir = y_array[i]
                 radius = 5
                 color = (255, 0, 0)
                 thickness = 2
@@ -272,3 +276,13 @@ class SegmentationBase:
         center_bubbles_px = abs(x - (x + w)) / 2
 
         return x_array, y_array, frame_result, center_bubbles_px
+
+
+if __name__ == "__main__":
+    segm = SegmentationBase()
+
+    vid = cv2.VideoCapture("C:\\Users\\26549\\PycharmProjects\\SSUGT_inclinometer\\1.mkv")
+
+    ret, frame = vid.read()
+
+    segm.new_frame_processing(frame)
