@@ -29,7 +29,6 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         # Здесь можно выполнить необходимые действия перед закрытием
         NivelTool.close_modem()
         self.stop_stream()
-        print("hello world!")
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)

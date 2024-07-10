@@ -1,3 +1,5 @@
+import json
+
 import requests
 import colorsys
 
@@ -33,6 +35,17 @@ class APIController:
     @classmethod
     def get_color_rgb(cls):
         return cls._color_rgb
+
+    @classmethod
+    def get_temperature(cls):
+        try:
+            temperature = requests.get(f"http://{cls._ip}/get_sensors")
+            temperature = json.loads(temperature.content).get('temp', None)
+            if temperature == -127.0:
+                temperature = None
+            return temperature
+        except:
+            pass
 
     @classmethod
     def set_ip(cls, value):

@@ -67,6 +67,7 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.gridLayout_3.addWidget(self.label, 0, 0, 1, 1)
         self.lineEdit_source_video = QtWidgets.QLineEdit(self.frame_3)
+        self.lineEdit_source_video.setEnabled(False)
         self.lineEdit_source_video.setMinimumSize(QtCore.QSize(0, 30))
         self.lineEdit_source_video.setObjectName("lineEdit_source_video")
         self.gridLayout_3.addWidget(self.lineEdit_source_video, 1, 0, 1, 1)

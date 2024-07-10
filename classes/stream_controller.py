@@ -9,6 +9,7 @@ from PyQt5.QtCore import Q_ARG, QMetaObject
 from PyQt5.QtWidgets import QLabel, QCheckBox
 from PyQt5 import QtCore
 
+from classes.APIController import APIController
 from classes.GlobalController import GlobalController
 from classes.NivelTool import NivelTool
 from classes.coordinate_system_offset import CoordinateSystemOffset
@@ -57,7 +58,8 @@ class StreamController:
                 image = frame
                 points, image, center_bubbles_px = self.segmentation.new_frame_processing(image)
                 CoordinateSystemOffset.set_temp_start_position(center_bubbles_px)
-                points, image, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, image, center_bubbles_px)
+                points, image, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, image,
+                                                                                               center_bubbles_px)
                 try:
                     with open('data/params_linear_reg.json', 'r') as file:
                         data_json = json.loads(file.read())
@@ -69,8 +71,8 @@ class StreamController:
                     self.label_value.setText(f"ВИМ: {center_bubbles_px}пикс.")
 
                 # if GlobalController.is_draw_rectangle() or GlobalController.is_segmentaion_show():
-                    # frame = cv2.cvtColor(crop_image, cv2.COLOR_GRAY2BGR)
-                    # cv2.imshow("crop_image", crop_image)
+                # frame = cv2.cvtColor(crop_image, cv2.COLOR_GRAY2BGR)
+                # cv2.imshow("crop_image", crop_image)
                 # math_module = MathModule(x_array, y_array)
 
                 # X, v = math_module.coeff_mat_estimator2()
@@ -95,14 +97,17 @@ class StreamController:
                     width=width,
                     height=height
                 )
-                self.file_saver.initialize(headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'points'],
-                                           sep=';')
+                self.file_saver.initialize(
+                    headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'temperature', 'points'],
+                    sep=';')
             if GlobalController.is_recording():
                 self.video_saver.write_frame(frame_original)
                 current_time = datetime.now()
                 formatted_time = current_time.strftime("%H:%M:%S.%f")
+                temperature = APIController.get_temperature()
                 self.file_saver.write_data(
-                    [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(points.tolist())])
+                    [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t,
+                     str(temperature), str(points.tolist())])
             else:
                 self.video_saver.release()
 
