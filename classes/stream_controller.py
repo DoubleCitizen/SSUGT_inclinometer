@@ -11,6 +11,7 @@ from PyQt5 import QtCore
 
 from classes.APIController import APIController
 from classes.GlobalController import GlobalController
+from classes.GlobalVarialbles import GlobalVariables
 from classes.NivelTool import NivelTool
 from classes.coordinate_system_offset import CoordinateSystemOffset
 from classes.math_module import MathModule
@@ -98,16 +99,18 @@ class StreamController:
                     height=height
                 )
                 self.file_saver.initialize(
-                    headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'temperature', 'points'],
+                    headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'temperature',
+                             'watch_indicator', 'points'],
                     sep=';')
             if GlobalController.is_recording():
                 self.video_saver.write_frame(frame_original)
                 current_time = datetime.now()
                 formatted_time = current_time.strftime("%H:%M:%S.%f")
                 temperature = APIController.get_temperature()
+                indicator = GlobalVariables.get_indicator_value()
                 self.file_saver.write_data(
                     [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t,
-                     str(temperature), str(points.tolist())])
+                     str(temperature), str(indicator), str(points.tolist())])
             else:
                 self.video_saver.release()
 
