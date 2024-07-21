@@ -55,20 +55,30 @@ class GlobalController:
 
     @classmethod
     def is_draw_rectangle(cls):
+        if cls._checkBox_rectangle_show is None:
+            return False
         return cls._checkBox_rectangle_show.isChecked()
 
     @classmethod
     def is_segmentaion_show(cls):
+        if cls._checkBox_segmentaion_show is None:
+            return False
         return cls._checkBox_segmentaion_show.isChecked()
 
     @classmethod
     def is_recording(cls):
+        if cls._checkBox_enable_record is None:
+            return True
         return cls._checkBox_enable_record.isChecked()
 
     @classmethod
     def is_draw_points(cls):
+        if cls._checkBox_view_points is None:
+            return False
         return cls._checkBox_view_points.isChecked()
 
     @classmethod
     def is_draw_start_position(cls) -> bool:
+        if cls._checkBox_start_position is None:
+            return False
         return cls._checkBox_start_position.isChecked()
