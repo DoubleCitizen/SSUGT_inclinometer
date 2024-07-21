@@ -86,7 +86,7 @@ class SegmentationBase:
                 temp_sorted_list.append(sorted_area_list[i])
         sorted_area_list = temp_sorted_list
 
-        print(len(sorted_area_list))
+        # print(len(sorted_area_list))
         try:
             x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
             if len(sorted_area_list) < 3:
