@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>ВИМ менеджер</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resource.qrc">
+    <normaloff>:/resource/resource/moncenter_logo.png</normaloff>:/resource/resource/moncenter_logo.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="1" colspan="2">
@@ -353,6 +357,13 @@
     </property>
     <addaction name="action_static_mode"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Меню</string>
+    </property>
+    <addaction name="action_main_window"/>
+   </widget>
+   <addaction name="menu_2"/>
    <addaction name="menu_tools"/>
    <addaction name="menu"/>
   </widget>
@@ -380,6 +391,11 @@
     <string>Отобразить режим статики</string>
    </property>
   </action>
+  <action name="action_main_window">
+   <property name="text">
+    <string>Вернуться в главное меню</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -388,6 +404,8 @@
    <header>widgets/graphicsviewvideo.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
