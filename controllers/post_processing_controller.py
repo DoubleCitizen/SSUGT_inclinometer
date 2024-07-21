@@ -58,11 +58,16 @@ class Ui_MainWindow(QMainWindow, post_processing.Ui_MainWindow):
 
         self.save_path, _ = QFileDialog.getOpenFileNames(None, "Открытие видеофайла", str(os.getcwd()),
                                                          "Все файлы (*.*)")
+        if len(self.save_path) == 0:
+            self.save_path = ""
+            return
         self.save_path = self.save_path[0]
 
         self.lineEdit.setText(str(self.save_path))
 
     def start_processing(self):
+        if not os.path.exists(self.save_path):
+            return
         self.progressBar.setVisible(True)
         self.label_time.setVisible(True)
         t = threading.Thread(target=start_processing, args=(self.save_path, self.signal_progressbar, self.signal_time_label))

@@ -17,13 +17,18 @@ def start_processing(file_path, signal_progressbar, signal_time_label):
 
 
     # Создание объекта для чтения видео
-    video = cv2.VideoCapture(video_input_file_name)
+    try:
+        video = cv2.VideoCapture(video_input_file_name)
+    except:
+        signal_progressbar.emit(400)
+        return
     total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
     file_saver = FileSaver()
 
     # Проверка на успешное открытие видеофайла
     if not video.isOpened():
         print("Could not open video")
+        signal_progressbar.emit(400)
         sys.exit()
 
     time_1 = time.time()
