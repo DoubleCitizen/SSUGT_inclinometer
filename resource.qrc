@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="resource">
+    <file>resource/esp32.png</file>
+    <file>resource/post_processing.png</file>
+    <file>resource/moncenter_logo.png</file>
+  </qresource>
+</RCC>
