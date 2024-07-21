@@ -9,6 +9,7 @@ from classes.GlobalVarialbles import GlobalVariables
 from classes.NivelTool import NivelTool
 from classes.coordinate_system_offset import CoordinateSystemOffset
 from classes.stream_controller import StreamController
+from controllers import start_menu_controller
 from dialogs.dialog_esp32 import Esp32Dialog
 from dialogs.dialog_linear_reg import InputDialog
 from ui import main
@@ -17,8 +18,11 @@ from ui import main
 class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
     def __init__(self):
         super(Ui_MainWindowController, self).__init__()
-        self.setupUi(self)
         self.segmentation: StreamController | None = None
+
+    def setupUi(self, MainWindow):
+        self.MainWindow = MainWindow
+        super().setupUi(MainWindow)
         self.disable_mode_static()
         GlobalController.set_checkBox_segmentaion_show(self.checkBox_segmentaion_show)
         GlobalController.set_checkBox_view_points(self.checkBox_view_points)
@@ -29,6 +33,9 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         GlobalController.set_checkBox_start_position(self.checkBox_start_position)
         self.timer = QTimer()
         self.timer.timeout.connect(self.onTimeout)
+        self.segmentation = None
+
+        self.add_functions()
 
     def start_timer(self):
         self.timer.start(1000)  # Start the timer with 1 second interval
@@ -76,11 +83,6 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         NivelTool.close_modem()
         self.stop_stream()
 
-    def setupUi(self, MainWindow):
-        super().setupUi(MainWindow)
-        self.add_functions()
-        self.segmentation = None
-
     def start_stream(self, cap):
         self.segmentation = StreamController(cap, self.graphicsView, self.label_value)
         self.segmentation.start_stream()
@@ -107,6 +109,11 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         self.action_dialog_regres.triggered.connect(self.open_dialog_parameters_reg)
         self.action_esp32.triggered.connect(self.open_dialog_esp32)
         self.action_static_mode.triggered.connect(self.switch_mode_static)
+        self.action_main_window.triggered.connect(lambda: self.open_start_window())
+
+    def open_start_window(self):
+        start_menu_window = start_menu_controller.Ui_MainWindow()
+        start_menu_window.setupUi(self.MainWindow)
 
     def open_dialog_esp32(self):
         dialog = Esp32Dialog()
