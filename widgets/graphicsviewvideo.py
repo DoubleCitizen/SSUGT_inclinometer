@@ -1,11 +1,9 @@
 import cv2
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage, QPixmap, QPolygonF, QPen, QColor
-from PyQt5.QtWidgets import QSizePolicy, QGraphicsPolygonItem
-from pyqt5_plugins.examplebutton import QtWidgets
-from pyqt5_plugins.examplebuttonplugin import QtGui
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QImage, QPixmap, QPolygonF, QPen, QColor
+from PySide6.QtWidgets import QSizePolicy, QGraphicsPolygonItem
 
 
 class QGraphicsViewVideo(QtWidgets.QGraphicsView):
@@ -16,7 +14,7 @@ class QGraphicsViewVideo(QtWidgets.QGraphicsView):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.polygon_points = []
 
-    @QtCore.pyqtSlot(np.ndarray)
+    @QtCore.Slot(np.ndarray)
     def image_cv(self, frame):
         """ Применение изображения из матрицы OpenCV """
         height, width = frame.shape[:2]

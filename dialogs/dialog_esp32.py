@@ -7,10 +7,10 @@ import threading
 import concurrent.futures
 
 import requests
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDoubleValidator, QColor
-from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QGridLayout, \
-    QListWidget, QListWidgetItem, QColorDialog, QWidget, QMenu, QAction, QWidgetAction
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QDoubleValidator, QColor, QAction
+from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QGridLayout, \
+    QListWidget, QListWidgetItem, QColorDialog, QWidget, QMenu, QWidgetAction
 import pickle
 
 from classes.APIController import APIController

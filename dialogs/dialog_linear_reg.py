@@ -1,8 +1,8 @@
 import json
 import os
 
-from PyQt5.QtGui import QDoubleValidator
-from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton
+from PySide6.QtGui import QDoubleValidator
+from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton
 
 class InputDialog(QDialog):
     def __init__(self):

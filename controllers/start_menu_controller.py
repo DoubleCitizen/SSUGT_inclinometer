@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QMainWindow
 
 from controllers import post_processing_controller
 from controllers.main_controller import Ui_MainWindowController

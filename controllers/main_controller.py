@@ -1,8 +1,9 @@
 import cv2
 import threading
 
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow
+import numpy as np
+from PySide6.QtCore import QTimer, Signal, QObject
+from PySide6.QtWidgets import QMainWindow
 
 from classes.GlobalController import GlobalController
 from classes.GlobalVarialbles import GlobalVariables
@@ -15,7 +16,8 @@ from dialogs.dialog_linear_reg import InputDialog
 from ui import main
 
 
-class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
+class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
+    signal_send_frame_graphics_view = Signal(np.ndarray)
     def __init__(self):
         super(Ui_MainWindowController, self).__init__()
         self.segmentation: StreamController | None = None
@@ -36,6 +38,11 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         self.segmentation = None
 
         self.add_functions()
+        self.lineEdit_source_video.setEnabled(True)
+        self.signal_send_frame_graphics_view.connect(self.send_frame_in_graphics_view)
+
+    def send_frame_in_graphics_view(self, frame: np.ndarray):
+        self.graphicsView.image_cv(frame)
 
     def start_timer(self):
         self.timer.start(1000)  # Start the timer with 1 second interval
@@ -76,7 +83,8 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         GlobalVariables.set_indicator_value(self.lineEdit_indicator_value.text())
 
     def update_indicator_value(self):
-        GlobalVariables.set_indicator_value(self.lineEdit_indicator_value.text())
+        if self.pushButton_time_point_start.isEnabled():
+            GlobalVariables.set_indicator_value(self.lineEdit_indicator_value.text())
 
     def closeEvent(self, event):
         # Здесь можно выполнить необходимые действия перед закрытием
@@ -84,7 +92,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow):
         self.stop_stream()
 
     def start_stream(self, cap):
-        self.segmentation = StreamController(cap, self.graphicsView, self.label_value)
+        self.segmentation = StreamController(cap, self.graphicsView, self.label_value, self.signal_send_frame_graphics_view)
         self.segmentation.start_stream()
 
     def stop_stream(self):

@@ -2,8 +2,9 @@ import time
 from functools import partial
 
 import serial.tools.list_ports
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMenu, QAction, QLabel
+from PySide6.QtCore import QTimer
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QMenu, QLabel
 from serial.serialutil import PortNotOpenError, SerialException
 from serial.tools.list_ports_common import ListPortInfo
 

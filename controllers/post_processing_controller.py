@@ -3,8 +3,8 @@ import os
 import sys
 import threading
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QApplication
 
 from classes.post_processing import start_processing
 from controllers import start_menu_controller
@@ -12,8 +12,8 @@ from ui import post_processing
 
 
 class Ui_MainWindow(QMainWindow, post_processing.Ui_MainWindow):
-    signal_progressbar = pyqtSignal(int)
-    signal_time_label = pyqtSignal(float)
+    signal_progressbar = Signal(int)
+    signal_time_label = Signal(float)
 
     def __init__(self):
         super(Ui_MainWindow, self).__init__()

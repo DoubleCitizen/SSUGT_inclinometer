@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QCheckBox, QSpinBox
+from PySide6.QtWidgets import QCheckBox, QSpinBox
 
 
 class GlobalController:

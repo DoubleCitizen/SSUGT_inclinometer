@@ -2,14 +2,12 @@ import math
 
 import cv2
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage, QPixmap, QPolygonF, QPen, QColor
-from PyQt5.QtWidgets import QSizePolicy, QGraphicsPolygonItem, QGraphicsView, QGraphicsScene, QGraphicsProxyWidget
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QImage, QPixmap, QPolygonF, QPen, QColor
+from PySide6.QtWidgets import QSizePolicy, QGraphicsPolygonItem, QGraphicsView, QGraphicsScene, QGraphicsProxyWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from pyqt5_plugins.examplebutton import QtWidgets
-from pyqt5_plugins.examplebuttonplugin import QtGui
 
 
 class QGraphicsViewPlot(QtWidgets.QGraphicsView):
@@ -31,7 +29,7 @@ class QGraphicsViewPlot(QtWidgets.QGraphicsView):
         # Add the proxy widget to the scene
         self.scene.addItem(self.proxy)
 
-    @QtCore.pyqtSlot(float, float, float)
+    @QtCore.Slot(float, float, float)
     def draw_parabola(self, a, b, c):
         # Коэффициенты параболы
         self.ax.clear()

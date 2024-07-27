@@ -25,6 +25,7 @@ class FileSaver:
 
         self.filename = current_directory + "/data/" + formatted_time + ".csv"
         with open(self.filename, 'w+') as file:
+            file.write(f"sep={sep}\n")
             for i, header in enumerate(headers):
                 if len(headers) - 1 == i:
                     file.write(str(header))
