@@ -28,9 +28,9 @@ class APIController:
     @classmethod
     def get_name(cls):
         try:
-            requests.get(f"http://{cls._ip}/get_name")
+            return requests.get(f"http://{cls._ip}/get_name")
         except:
-            pass
+            return None
 
     @classmethod
     def get_color_rgb(cls):
@@ -49,6 +49,7 @@ class APIController:
 
     @classmethod
     def set_ip(cls, value):
+        print(f"set_ip = {value}")
         cls._ip = value
 
     @classmethod
