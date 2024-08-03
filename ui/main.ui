@@ -42,7 +42,19 @@
           </font>
          </property>
          <property name="text">
-          <string/>
+          <string>Nivel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_vim_temp">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Температура ВИМ</string>
          </property>
         </widget>
        </item>
@@ -54,7 +66,7 @@
           </font>
          </property>
          <property name="text">
-          <string/>
+          <string>ВИМ</string>
          </property>
         </widget>
        </item>

@@ -62,6 +62,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.label_nivel)
 
+        self.label_vim_temp = QLabel(self.frame_2)
+        self.label_vim_temp.setObjectName(u"label_vim_temp")
+        self.label_vim_temp.setFont(font)
+
+        self.horizontalLayout.addWidget(self.label_vim_temp)
+
         self.label_value = QLabel(self.frame_2)
         self.label_value.setObjectName(u"label_value")
         self.label_value.setFont(font)
@@ -271,8 +277,9 @@ class Ui_MainWindow(object):
         self.action_esp32.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c esp32", None))
         self.action_static_mode.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u043e\u0431\u0440\u0430\u0437\u0438\u0442\u044c \u0440\u0435\u0436\u0438\u043c \u0441\u0442\u0430\u0442\u0438\u043a\u0438", None))
         self.action_main_window.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u0433\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e", None))
-        self.label_nivel.setText("")
-        self.label_value.setText("")
+        self.label_nivel.setText(QCoreApplication.translate("MainWindow", u"Nivel", None))
+        self.label_vim_temp.setText(QCoreApplication.translate("MainWindow", u"\u0422\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0430 \u0412\u0418\u041c", None))
+        self.label_value.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0418\u041c", None))
         self.pushButton_apply_source.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u044c \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0432\u0438\u0434\u0435\u043e\u043f\u043e\u0442\u043e\u043a\u0430", None))
         self.pushButton_stop_stream.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043f\u043e\u0442\u043e\u043a", None))
