@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from PySide6.QtCore import Signal, QObject
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QLabel, QCheckBox
 from PySide6 import QtCore
 
@@ -49,6 +50,23 @@ class StreamController(QObject):
 
         while self.video_is_started:
             try:
+                esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
+                if esp32_name is None:
+                    text_status = f"Разорвано соединение с ВИМ: {esp32_name}"
+                    icon = QIcon(u":/resource/resource/close.png")
+                    pixmap = icon.pixmap(16, 16)  # Установите размер иконки
+                    GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
+                    GlobalController.get_status_esp_icon().setText("")
+                    GlobalController.get_status_esp_icon().setPixmap(pixmap)
+                else:
+                    text_status = f"Успешное соединение с ВИМ: {esp32_name}"
+                    icon = QIcon(u":/resource/resource/check.png")
+                    pixmap = icon.pixmap(16, 16)  # Установите размер иконки
+                    GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
+                    GlobalController.get_status_esp_icon().setText("")
+                    GlobalController.get_status_esp_icon().setPixmap(pixmap)
+
+
                 ret, frame = self.cap.read()
                 if frame is None:
                     self.video_is_started = False
@@ -109,11 +127,12 @@ class StreamController(QObject):
                         headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'temperature',
                                  'watch_indicator', 'points'],
                         sep=';')
+                temperature = APIController.get_temperature()
+                GlobalController.get_label_vim_temperature().setText(f"t = {temperature}°C")
                 if GlobalController.is_recording():
                     self.video_saver.write_frame(frame_original)
                     current_time = datetime.now()
                     formatted_time = current_time.strftime("%H:%M:%S.%f")
-                    temperature = APIController.get_temperature()
                     indicator = GlobalVariables.get_indicator_value()
                     self.file_saver.write_data(
                         [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t,
