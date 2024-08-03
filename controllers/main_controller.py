@@ -26,13 +26,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.MainWindow = MainWindow
         super().setupUi(MainWindow)
         self.disable_mode_static()
-        GlobalController.set_checkBox_segmentaion_show(self.checkBox_segmentaion_show)
-        GlobalController.set_checkBox_view_points(self.checkBox_view_points)
-        GlobalController.set_checkBox_enable_record(self.checkBox_enable_record)
-        GlobalController.set_checkBox_rectangle_show(self.checkBox_rectangle_show)
-        GlobalController.set_spinBox_points(self.spinBox_points)
-        GlobalController.set_lineEdit_source_video(self.lineEdit_source_video)
-        GlobalController.set_checkBox_start_position(self.checkBox_start_position)
+        self.initialize_global_controller()
         self.timer = QTimer()
         self.timer.timeout.connect(self.onTimeout)
         self.segmentation = None
@@ -40,6 +34,18 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.add_functions()
         self.lineEdit_source_video.setEnabled(True)
         self.signal_send_frame_graphics_view.connect(self.send_frame_in_graphics_view)
+
+    def initialize_global_controller(self):
+        GlobalController.set_label_vim_temperature(self.label_vim_temp)
+        GlobalController.set_label_status_esp_connect(self.label_status_esp_connect)
+        GlobalController.set_status_esp_icon(self.label_status_esp_icon)
+        GlobalController.set_checkBox_segmentaion_show(self.checkBox_segmentaion_show)
+        GlobalController.set_checkBox_view_points(self.checkBox_view_points)
+        GlobalController.set_checkBox_enable_record(self.checkBox_enable_record)
+        GlobalController.set_checkBox_rectangle_show(self.checkBox_rectangle_show)
+        GlobalController.set_spinBox_points(self.spinBox_points)
+        GlobalController.set_lineEdit_source_video(self.lineEdit_source_video)
+        GlobalController.set_checkBox_start_position(self.checkBox_start_position)
 
     def send_frame_in_graphics_view(self, frame: np.ndarray):
         self.graphicsView.image_cv(frame)
