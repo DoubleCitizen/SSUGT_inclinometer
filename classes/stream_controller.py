@@ -30,8 +30,8 @@ class StreamController(QObject):
         self.cap = cap
         self.label_value: QLabel = label_value
         # Получить общие кадры и FPS
-        self.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.fps = cap.get(cv2.CAP_PROP_FPS)
+        # self.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        # self.fps = cap.get(cv2.CAP_PROP_FPS)
         self.graphics_view: QGraphicsViewVideo = graphics_view
         self.video_is_started = False
         self.segmentation = SegmentationBase()
@@ -45,40 +45,50 @@ class StreamController(QObject):
     def stop_stream(self):
         self.video_is_started = False
 
+    def connection_is_missing(self, esp32_name):
+        text_status = f"Разорвано соединение с ВИМ: {esp32_name}"
+        icon = QIcon(u":/resource/resource/close.png")
+        pixmap = icon.pixmap(16, 16)  # Установите размер иконки
+        GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
+        GlobalController.get_status_esp_icon().setText("")
+        GlobalController.get_status_esp_icon().setPixmap(pixmap)
+
+    def connection_is_good(self, esp32_name):
+        text_status = f"Успешное соединение с ВИМ: {esp32_name}"
+        icon = QIcon(u":/resource/resource/check.png")
+        pixmap = icon.pixmap(16, 16)  # Установите размер иконки
+        GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
+        GlobalController.get_status_esp_icon().setText("")
+        GlobalController.get_status_esp_icon().setPixmap(pixmap)
+
     def start_stream(self):
         self.video_is_started = True
+        esp32_name = ''
+        APIController.check_is_video_capture(self.cap)
+        image = np.zeros((1, 1))
 
         while self.video_is_started:
             try:
-                esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
+                if not APIController.get_is_video_capture():
+                    esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
                 if esp32_name is None:
-                    text_status = f"Разорвано соединение с ВИМ: {esp32_name}"
-                    icon = QIcon(u":/resource/resource/close.png")
-                    pixmap = icon.pixmap(16, 16)  # Установите размер иконки
-                    GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
-                    GlobalController.get_status_esp_icon().setText("")
-                    GlobalController.get_status_esp_icon().setPixmap(pixmap)
+                    self.connection_is_missing(esp32_name)
+                elif esp32_name == '':
+                    pass
                 else:
-                    text_status = f"Успешное соединение с ВИМ: {esp32_name}"
-                    icon = QIcon(u":/resource/resource/check.png")
-                    pixmap = icon.pixmap(16, 16)  # Установите размер иконки
-                    GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
-                    GlobalController.get_status_esp_icon().setText("")
-                    GlobalController.get_status_esp_icon().setPixmap(pixmap)
+                    self.connection_is_good(esp32_name)
 
-
-                ret, frame = self.cap.read()
+                frame, fps = APIController.get_frame()
                 if frame is None:
                     self.video_is_started = False
+                    self.connection_is_missing(esp32_name)
                     break
+                GlobalController.get_label_fps_counter().setText(f"FPS = {round(fps)}")
                 frame_original = frame.copy()
                 height, width = frame.shape[:2]
-                fps = self.cap.get(cv2.CAP_PROP_FPS)
+                # fps = self.cap.get(cv2.CAP_PROP_FPS)
                 center_bubbles_px = None
                 points = np.array([])
-
-                if not ret:
-                    break
 
                 try:
                     image = frame
@@ -135,7 +145,8 @@ class StreamController(QObject):
                     formatted_time = current_time.strftime("%H:%M:%S.%f")
                     indicator = GlobalVariables.get_indicator_value()
                     self.file_saver.write_data(
-                        [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t,
+                        [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y,
+                         NivelTool.current_t,
                          str(temperature), str(indicator), str(points.tolist())])
                 else:
                     self.video_saver.release()
@@ -148,6 +159,8 @@ class StreamController(QObject):
                     break
             except Exception as e:
                 print(e)
-        self.cap.release()
+        if APIController.get_is_video_capture():
+            self.cap.release()
+        self.connection_is_missing(esp32_name)
         self.graphics_view.scene.clear()
         self.video_saver.release()

@@ -12,7 +12,16 @@ class GlobalController:
     _video_capture_source = None
     _lineEdit_source_video = None
     _label_status_esp_connect: QLabel | None = None
-    _status_esp_icon: QLabel|None=None
+    _status_esp_icon: QLabel | None = None
+    _label_fps_counter: QLabel | None = None
+
+    @classmethod
+    def set_label_fps_counter(cls, label_fps_counter: QLabel):
+        cls._label_fps_counter = label_fps_counter
+
+    @classmethod
+    def get_label_fps_counter(cls) -> QLabel:
+        return cls._label_fps_counter
 
     @classmethod
     def set_status_esp_icon(cls, status_esp_icon: QLabel):

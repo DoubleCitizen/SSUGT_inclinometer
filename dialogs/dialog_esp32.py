@@ -99,7 +99,7 @@ class Esp32Dialog(QDialog):
 
         self.lineEdit_placeholder = QLineEdit("http://0.0.0.0")
         self.lineEdit_placeholder.setAlignment(Qt.AlignRight)
-        self.lineEdit_stream = QLineEdit(":81/stream")
+        self.lineEdit_stream = QLineEdit("/get_image")
         self.lineEdit_placeholder.textChanged.connect(self.update_video_capture_info)
         self.lineEdit_stream.textChanged.connect(self.update_video_capture_info)
 

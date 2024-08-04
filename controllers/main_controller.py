@@ -36,6 +36,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.signal_send_frame_graphics_view.connect(self.send_frame_in_graphics_view)
 
     def initialize_global_controller(self):
+        GlobalController.set_label_fps_counter(self.label_fps_counter)
         GlobalController.set_label_vim_temperature(self.label_vim_temp)
         GlobalController.set_label_status_esp_connect(self.label_status_esp_connect)
         GlobalController.set_status_esp_icon(self.label_status_esp_icon)
@@ -146,6 +147,5 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
     def apply_source(self):
         if self.segmentation is None or not self.segmentation.video_is_started:
             source_video = self.lineEdit_source_video.text()
-            cap = cv2.VideoCapture(source_video)
-            process = threading.Thread(target=lambda: self.start_stream(cap))
+            process = threading.Thread(target=lambda: self.start_stream(source_video))
             process.start()
