@@ -9,7 +9,8 @@ import concurrent.futures
 import requests
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QDoubleValidator, QColor, QAction
-from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QGridLayout, \
+from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, \
+    QGridLayout, \
     QListWidget, QListWidgetItem, QColorDialog, QWidget, QMenu, QWidgetAction
 import pickle
 
@@ -71,7 +72,6 @@ class EspListWidget(QListWidget):
                 pass
 
 
-
 class Esp32Dialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -100,6 +100,12 @@ class Esp32Dialog(QDialog):
         self.lineEdit_placeholder = QLineEdit("http://0.0.0.0")
         self.lineEdit_placeholder.setAlignment(Qt.AlignRight)
         self.lineEdit_stream = QLineEdit("/get_image")
+        self.comboBox = QComboBox()
+        self.comboBox.addItems([
+            "/get_image (получение кадра по requests)",
+            ":81/stream (НЕ РАБОТАЕТ!!! получение непрерывных кадров VideoCapture)"
+        ])
+        self.comboBox.currentIndexChanged.connect(self.combobox_index_changed)
         self.lineEdit_placeholder.textChanged.connect(self.update_video_capture_info)
         self.lineEdit_stream.textChanged.connect(self.update_video_capture_info)
 
@@ -111,11 +117,20 @@ class Esp32Dialog(QDialog):
         layout.addWidget(self.pushButton_connect, 1, 1)
         layout.addWidget(self.lineEdit_placeholder, 2, 0)
         layout.addWidget(self.lineEdit_stream, 2, 1)
-        layout.addWidget(self.color_widget, 3, 0, 1, 2)
-        layout.addWidget(self.button_color_picker, 4, 0, 1, 2)
+        layout.addWidget(self.comboBox, 3, 0, 1, 2)
+        layout.addWidget(self.color_widget, 4, 0, 1, 2)
+        layout.addWidget(self.button_color_picker, 5, 0, 1, 2)
 
         self.setLayout(layout)
         self.load()
+
+    def combobox_index_changed(self):
+        match self.comboBox.currentIndex():
+            case 0:
+                self.lineEdit_stream.setText("/get_image")
+            case 1:
+                self.lineEdit_stream.setText(":81/stream")
+        self.update_video_capture_info()
 
     def openColorDialog(self):
         color = self.color_dialog.getColor()
@@ -145,6 +160,7 @@ class Esp32Dialog(QDialog):
             json_data = ConfigController("data/dialog_esp32.json").load()
             self.lineEdit_placeholder.setText(json_data['lineEdit_placeholder_text'])
             self.lineEdit_stream.setText(json_data['lineEdit_stream_text'])
+            self.comboBox.setCurrentIndex(json_data['current_index'])
         except:
             pass
 
@@ -154,10 +170,12 @@ class Esp32Dialog(QDialog):
         json_data = config_controller.load()
         lineEdit_placeholder_text = self.lineEdit_placeholder.text()
         lineEdit_stream_text = self.lineEdit_stream.text()
+        index_combobox = self.comboBox.currentIndex()
 
         json_data.update({
             "lineEdit_placeholder_text": lineEdit_placeholder_text,
             "lineEdit_stream_text": lineEdit_stream_text,
+            "current_index": index_combobox,
         })
 
         config_controller.save(json_data)
@@ -222,6 +240,7 @@ class Esp32Dialog(QDialog):
                 q.put((ip, result))
         except:
             q.put(None)
+
     @staticmethod
     def get_local_ip():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -229,6 +248,7 @@ class Esp32Dialog(QDialog):
         local_ip = s.getsockname()
         s.close()
         return local_ip
+
     def get_list_network(self):
         # hostname = socket.gethostname()
         # local_ip = socket.gethostbyname(hostname)

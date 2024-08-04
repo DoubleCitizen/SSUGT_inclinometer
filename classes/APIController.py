@@ -51,9 +51,17 @@ class APIController:
             response = requests.get(cap, timeout=5)
             cls._is_video_capture = False
             cls._cap = cap
-        except MissingSchema:
+        except:
             cls._is_video_capture = True
             cls._cap = cv2.VideoCapture(cap)
+
+        # except ConnectionError:
+        #     cls._is_video_capture = True
+        #     cls._cap = cv2.VideoCapture(cap)
+
+    @classmethod
+    def get_cap(cls):
+        return cls._cap
 
     @classmethod
     def get_frame(cls):
@@ -100,7 +108,6 @@ class APIController:
 
     @classmethod
     def set_ip(cls, value):
-        print(f"set_ip = {value}")
         cls._ip = value
 
     @classmethod

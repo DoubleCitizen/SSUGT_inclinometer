@@ -153,14 +153,13 @@ class StreamController(QObject):
 
                 key = cv2.waitKey(1)
                 self.signal_send_frame_graphics_view.emit(image)
-                print("stream")
 
                 if key == ord('q'):
                     break
             except Exception as e:
                 print(e)
         if APIController.get_is_video_capture():
-            self.cap.release()
+            APIController.get_cap().release()
         self.connection_is_missing(esp32_name)
         self.graphics_view.scene.clear()
         self.video_saver.release()
