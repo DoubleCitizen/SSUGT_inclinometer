@@ -85,29 +85,6 @@ class Ui_MainWindow(object):
         self.frame_3.setFrameShadow(QFrame.Raised)
         self.gridLayout_3 = QGridLayout(self.frame_3)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.pushButton_stop_stream = QPushButton(self.frame_3)
-        self.pushButton_stop_stream.setObjectName(u"pushButton_stop_stream")
-
-        self.gridLayout_3.addWidget(self.pushButton_stop_stream, 4, 0, 1, 1)
-
-        self.label = QLabel(self.frame_3)
-        self.label.setObjectName(u"label")
-        self.label.setMinimumSize(QSize(0, 0))
-
-        self.gridLayout_3.addWidget(self.label, 1, 0, 1, 1)
-
-        self.pushButton_apply_source = QPushButton(self.frame_3)
-        self.pushButton_apply_source.setObjectName(u"pushButton_apply_source")
-
-        self.gridLayout_3.addWidget(self.pushButton_apply_source, 3, 0, 1, 1)
-
-        self.lineEdit_source_video = QLineEdit(self.frame_3)
-        self.lineEdit_source_video.setObjectName(u"lineEdit_source_video")
-        self.lineEdit_source_video.setEnabled(False)
-        self.lineEdit_source_video.setMinimumSize(QSize(0, 30))
-
-        self.gridLayout_3.addWidget(self.lineEdit_source_video, 2, 0, 1, 1)
-
         self.frame_5 = QFrame(self.frame_3)
         self.frame_5.setObjectName(u"frame_5")
         self.frame_5.setFrameShape(QFrame.StyledPanel)
@@ -143,6 +120,34 @@ class Ui_MainWindow(object):
 
 
         self.gridLayout_3.addWidget(self.frame_5, 0, 0, 1, 1)
+
+        self.label = QLabel(self.frame_3)
+        self.label.setObjectName(u"label")
+        self.label.setMinimumSize(QSize(0, 0))
+
+        self.gridLayout_3.addWidget(self.label, 2, 0, 1, 1)
+
+        self.pushButton_stop_stream = QPushButton(self.frame_3)
+        self.pushButton_stop_stream.setObjectName(u"pushButton_stop_stream")
+
+        self.gridLayout_3.addWidget(self.pushButton_stop_stream, 5, 0, 1, 1)
+
+        self.pushButton_apply_source = QPushButton(self.frame_3)
+        self.pushButton_apply_source.setObjectName(u"pushButton_apply_source")
+
+        self.gridLayout_3.addWidget(self.pushButton_apply_source, 4, 0, 1, 1)
+
+        self.lineEdit_source_video = QLineEdit(self.frame_3)
+        self.lineEdit_source_video.setObjectName(u"lineEdit_source_video")
+        self.lineEdit_source_video.setEnabled(False)
+        self.lineEdit_source_video.setMinimumSize(QSize(0, 30))
+
+        self.gridLayout_3.addWidget(self.lineEdit_source_video, 3, 0, 1, 1)
+
+        self.label_fps_counter = QLabel(self.frame_3)
+        self.label_fps_counter.setObjectName(u"label_fps_counter")
+
+        self.gridLayout_3.addWidget(self.label_fps_counter, 1, 0, 1, 1)
 
 
         self.gridLayout.addWidget(self.frame_3, 1, 2, 1, 1)
@@ -316,11 +321,12 @@ class Ui_MainWindow(object):
         self.label_nivel.setText(QCoreApplication.translate("MainWindow", u"Nivel", None))
         self.label_vim_temp.setText(QCoreApplication.translate("MainWindow", u"\u0422\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0430 \u0412\u0418\u041c", None))
         self.label_value.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0418\u041c", None))
-        self.pushButton_stop_stream.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043f\u043e\u0442\u043e\u043a", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0432\u0438\u0434\u0435\u043e\u043f\u043e\u0442\u043e\u043a\u0430", None))
-        self.pushButton_apply_source.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u044c \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a", None))
         self.label_status_esp_icon.setText("")
         self.label_status_esp_connect.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043e\u0441\u0442\u043e\u044f\u043d\u0438\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f \u043a \u0412\u0418\u041c", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0432\u0438\u0434\u0435\u043e\u043f\u043e\u0442\u043e\u043a\u0430", None))
+        self.pushButton_stop_stream.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043f\u043e\u0442\u043e\u043a", None))
+        self.pushButton_apply_source.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u044c \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a", None))
+        self.label_fps_counter.setText(QCoreApplication.translate("MainWindow", u"FPS = 0", None))
         self.pushButton_start_position.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043c\u0435\u0441\u0442\u0438\u0442\u044c \u043d\u0430\u0447\u0430\u043b\u043e \u043e\u0442\u0441\u0447\u0435\u0442\u0430", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u0420\u0435\u0433\u0443\u043b\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0447\u0430\u0441\u0442\u043e\u0442\u0443 \u0437\u0430\u043f\u0438\u0441\u0438 \u0442\u043e\u0447\u0435\u043a", None))
         self.checkBox_rectangle_show.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u043e\u0431\u0440\u0430\u0437\u0438\u0442\u044c \u043f\u0440\u044f\u043c\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a", None))
