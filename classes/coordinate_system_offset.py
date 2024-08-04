@@ -24,7 +24,7 @@ class CoordinateSystemOffset:
     def get_start_position(cls):
         if cls._start_position is None:
             json_data = ConfigController("data/dialog_esp32.json").load()
-            cls._start_position = json_data.get('start_position')
+            cls._start_position = json_data.get('start_position', 0)
         return cls._start_position
 
     @classmethod
