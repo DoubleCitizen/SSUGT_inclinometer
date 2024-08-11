@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QMainWindow
 from classes.GlobalController import GlobalController
 from classes.GlobalVarialbles import GlobalVariables
 from classes.NivelTool import NivelTool
+from classes.ShootingSpeed import ShootingSpeed
 from classes.coordinate_system_offset import CoordinateSystemOffset
 from classes.stream_controller import StreamController
 from controllers import start_menu_controller
@@ -30,10 +31,24 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.timer = QTimer()
         self.timer.timeout.connect(self.onTimeout)
         self.segmentation = None
+        self.lineEdit_speed_frame.textChanged.connect(self.speed_frame_line_edit_changed)
+
 
         self.add_functions()
         self.lineEdit_source_video.setEnabled(True)
         self.signal_send_frame_graphics_view.connect(self.send_frame_in_graphics_view)
+        self.speed_frame_line_edit_changed()
+        self.comboBox_speed_frame.currentIndexChanged.connect(self.combobox_speed_frame_changed)
+
+    def combobox_speed_frame_changed(self):
+        ShootingSpeed.set_mode_speed_frame(self.comboBox_speed_frame.currentIndex())
+    def speed_frame_line_edit_changed(self):
+        try:
+            float(self.lineEdit_speed_frame.text())
+        except ValueError:
+            self.pushButton_apply_source.setEnabled(False)
+        else:
+            self.pushButton_apply_source.setEnabled(True)
 
     def initialize_global_controller(self):
         GlobalController.set_label_fps_counter(self.label_fps_counter)
@@ -47,6 +62,9 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         GlobalController.set_spinBox_points(self.spinBox_points)
         GlobalController.set_lineEdit_source_video(self.lineEdit_source_video)
         GlobalController.set_checkBox_start_position(self.checkBox_start_position)
+        GlobalController.set_push_button_apply_source(self.pushButton_apply_source)
+        ShootingSpeed.set_line_edit_speed_frame(self.lineEdit_speed_frame)
+        ShootingSpeed.set_combobox_speed_frame(self.comboBox_speed_frame)
 
     def send_frame_in_graphics_view(self, frame: np.ndarray):
         self.graphicsView.image_cv(frame)
@@ -117,6 +135,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.pushButton_time_point_start.clicked.connect(lambda: self.start_time_point())
         self.pushButton_time_point_end.clicked.connect(lambda: self.stop_time_point())
         self.lineEdit_indicator_value.textChanged.connect(self.update_indicator_value)
+
 
         self.add_actions()
 

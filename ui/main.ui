@@ -18,6 +18,43 @@
     <normaloff>:/resource/resource/moncenter_logo.png</normaloff>:/resource/resource/moncenter_logo.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="palette">
+    <palette>
+     <active>
+      <colorrole role="AlternateBase">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>246</red>
+         <green>246</green>
+         <blue>246</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </active>
+     <inactive>
+      <colorrole role="AlternateBase">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>246</red>
+         <green>246</green>
+         <blue>246</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </inactive>
+     <disabled>
+      <colorrole role="AlternateBase">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>246</red>
+         <green>246</green>
+         <blue>246</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </disabled>
+    </palette>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="1" colspan="2">
      <widget class="QFrame" name="frame_2">
@@ -226,14 +263,66 @@
        <property name="topMargin">
         <number>1</number>
        </property>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="pushButton_start_position">
-         <property name="text">
-          <string>Сместить начало отсчета</string>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_speed_frame">
+         <item>
+          <property name="text">
+           <string>Гц</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 кадр за количество секунд</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLineEdit" name="lineEdit_speed_frame">
+         <property name="placeholderText">
+          <string>Введите кол-во Гц или секунд в зависимости от ограничивающего параметра съемки</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="1" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBox_start_position">
+         <property name="text">
+          <string>Показать начало отсчета</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBox_segmentaion_show">
+         <property name="text">
+          <string>Показать сегментацию</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBox_rectangle_show">
+         <property name="text">
+          <string>Отобразить прямоугольник</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBox_view_points">
+         <property name="text">
+          <string>Отобразить точки</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="QSpinBox" name="spinBox_points">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
         <widget class="QLabel" name="label_2">
          <property name="maximumSize">
           <size>
@@ -246,14 +335,7 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
-        <widget class="QCheckBox" name="checkBox_rectangle_show">
-         <property name="text">
-          <string>Отобразить прямоугольник</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
+       <item row="4" column="0" colspan="2">
         <widget class="QCheckBox" name="checkBox_enable_record">
          <property name="text">
           <string>Начать запись</string>
@@ -266,31 +348,10 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="QCheckBox" name="checkBox_view_points">
+       <item row="2" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton_start_position">
          <property name="text">
-          <string>Отобразить точки</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QCheckBox" name="checkBox_segmentaion_show">
-         <property name="text">
-          <string>Показать сегментацию</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QSpinBox" name="spinBox_points">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="checkBox_start_position">
-         <property name="text">
-          <string>Показать начало отсчета</string>
+          <string>Сместить начало отсчета</string>
          </property>
         </widget>
        </item>

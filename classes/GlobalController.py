@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QCheckBox, QSpinBox, QLabel
+from PySide6.QtWidgets import QCheckBox, QSpinBox, QLabel, QPushButton
 
 
 class GlobalController:
@@ -14,6 +14,15 @@ class GlobalController:
     _label_status_esp_connect: QLabel | None = None
     _status_esp_icon: QLabel | None = None
     _label_fps_counter: QLabel | None = None
+    _pushButton_apply_source: QPushButton | None = None
+
+    @classmethod
+    def get_push_button_apply_source(cls) -> QPushButton:
+        return cls._pushButton_apply_source
+
+    @classmethod
+    def set_push_button_apply_source(cls, pushButton_apply_source: QPushButton):
+        cls._pushButton_apply_source = pushButton_apply_source
 
     @classmethod
     def set_label_fps_counter(cls, label_fps_counter: QLabel):

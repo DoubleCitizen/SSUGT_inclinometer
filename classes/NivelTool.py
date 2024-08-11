@@ -27,18 +27,15 @@ class NivelTool:
     _current_y = 'NaN'
     _current_t = 'NaN'
 
-
     @classmethod
     @property
     def current_x(cls):
         return cls._current_x
 
-
     @classmethod
     @property
     def current_y(cls):
         return cls._current_y
-
 
     @classmethod
     @property
