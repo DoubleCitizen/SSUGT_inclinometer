@@ -12,6 +12,97 @@ class SegmentationBase:
         self.crop_w = 0
         self.crop_h = 0
 
+    @staticmethod
+    def delete_polygons(image):
+        # Находим контуры на бинарном изображении
+        contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Инициализация переменных для хранения максимальной площади и соответствующего контура
+        max_area = 0
+        max_contour = None
+
+        # Перебор контуров для нахождения самого большого
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > max_area:
+                max_area = area
+                max_contour = contour
+
+        # Создание копии исходного изображения для вывода результата
+        result = image.copy()
+
+        # Закрашивание всех контуров, кроме самого большого, в черный цвет
+        for contour in contours:
+            if contour is not max_contour:
+                cv2.drawContours(result, [contour], 0, 0, -1)
+        return result, max_contour
+
+    @staticmethod
+    def delete_closers_contours(cropped_image, edges, contours):
+        kernel = np.ones((3, 3), np.uint8)
+        edges = cv2.dilate(edges, kernel, iterations=9)
+        # Находжение контуров
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Минимальная площадь контура
+        max_area = float(0)
+
+        height_img, width_img = edges.shape[:2]
+
+        # Список контуров, которые нужно сохранить
+        valid_contours = []
+        idx = 0
+        for i, c in enumerate(contours):
+            area = cv2.contourArea(c)
+            x, y, w, h = cv2.boundingRect(c)
+            print(area)
+            if x < width_img * 0.15:
+                continue
+            if y < height_img * 0.1:
+                continue
+            if x + w > width_img * 0.85:
+                continue
+            if y + h > height_img * 0.9:
+                continue
+            if area > max_area:
+                max_area = area
+                idx = i
+                # valid_contours.append(c)
+
+        # Вывод результата
+        result = edges.copy() * 0
+        c = contours[idx]
+        cv2.drawContours(result, [c], -1, (255, 255, 255), 2)
+        # cv2.drawContours(result, contours, -1, (255, 255, 255), 2)
+        # cv2.drawContours()
+
+        return result
+
+    def v2_frame_proccesing(self, frame_original):
+        frame_original.copy()
+        frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
+        frame = cv2.medianBlur(frame, 5)
+        ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
+
+        thresh, max_contour = self.delete_polygons(thresh)
+        x, y, w, h = cv2.boundingRect(max_contour)
+        cropped_image = frame[y:y + h, x:x + w]  # обрезка изображения
+        ret_th, thresh = cv2.threshold(cropped_image, 0, 255, cv2.THRESH_OTSU)
+        # edges = cv2.Canny(cropped_image, 100, 200)
+        v = np.median(cropped_image)
+        sigma = 0.33
+        lower = int(max(0, (1.0 - sigma) * v))
+        upper = int(min(255, (1.0 + sigma) * v))
+
+        # Применение функции Canny с автоматически определёнными порогами
+        edges = cv2.Canny(cropped_image, lower, upper)
+
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(edges, contours, 0, 0, -1)
+        result = self.delete_closers_contours(cropped_image, edges, contours)
+
+        return result
+
     def new_frame_processing(self, frame_original):
         frame_result = frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
@@ -93,7 +184,11 @@ class SegmentationBase:
                 x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
 
         except IndexError:
-            x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
+            try:
+                x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
+            except IndexError:
+                print(IndexError)
+                return [], frame_original, 0
         cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
         # Создание графика с точками
         # Транспонирование массива
