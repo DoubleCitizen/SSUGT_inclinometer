@@ -19,6 +19,7 @@ from ui import main
 
 class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
     signal_send_frame_graphics_view = Signal(np.ndarray)
+
     def __init__(self):
         super(Ui_MainWindowController, self).__init__()
         self.segmentation: StreamController | None = None
@@ -33,7 +34,6 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.segmentation = None
         self.lineEdit_speed_frame.textChanged.connect(self.speed_frame_line_edit_changed)
 
-
         self.add_functions()
         self.lineEdit_source_video.setEnabled(True)
         self.signal_send_frame_graphics_view.connect(self.send_frame_in_graphics_view)
@@ -42,6 +42,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
 
     def combobox_speed_frame_changed(self):
         ShootingSpeed.set_mode_speed_frame(self.comboBox_speed_frame.currentIndex())
+
     def speed_frame_line_edit_changed(self):
         try:
             float(self.lineEdit_speed_frame.text())
@@ -120,7 +121,8 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.stop_stream()
 
     def start_stream(self, cap):
-        self.segmentation = StreamController(cap, self.graphicsView, self.label_value, self.signal_send_frame_graphics_view)
+        self.segmentation = StreamController(cap, self.graphicsView, self.label_value,
+                                             self.signal_send_frame_graphics_view)
         self.segmentation.start_stream()
 
     def stop_stream(self):
@@ -135,7 +137,6 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.pushButton_time_point_start.clicked.connect(lambda: self.start_time_point())
         self.pushButton_time_point_end.clicked.connect(lambda: self.stop_time_point())
         self.lineEdit_indicator_value.textChanged.connect(self.update_indicator_value)
-
 
         self.add_actions()
 

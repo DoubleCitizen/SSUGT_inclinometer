@@ -34,10 +34,11 @@ def kill_process():
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('Fusion')
     MainWindow = Ui_MainWindow()  # Используйте ваш класс здесь
     MainWindow.setupUi(MainWindow)
     MainWindow.show()
-    app.exec_()
+    app.exec()
     kill_process()
     sys.exit()
     # cap = cv2.VideoCapture("inklin.mp4")

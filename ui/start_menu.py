@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(465, 264)
+        MainWindow.resize(465, 346)
         icon = QIcon()
         icon.addFile(u":/resource/resource/moncenter_logo.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         MainWindow.setWindowIcon(icon)
@@ -56,6 +56,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.pushButton_post_processing)
 
+        self.pushButton_develop_tool = QPushButton(self.centralwidget)
+        self.pushButton_develop_tool.setObjectName(u"pushButton_develop_tool")
+        sizePolicy.setHeightForWidth(self.pushButton_develop_tool.sizePolicy().hasHeightForWidth())
+        self.pushButton_develop_tool.setSizePolicy(sizePolicy)
+
+        self.verticalLayout.addWidget(self.pushButton_develop_tool)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -74,5 +81,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0413\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e \u0412\u0418\u041c", None))
         self.pushButton_vim.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0412\u0418\u041c \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440", None))
         self.pushButton_post_processing.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u043f\u043e\u0441\u0442 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0443 \u0412\u0418\u041c", None))
+        self.pushButton_develop_tool.setText(QCoreApplication.translate("MainWindow", u"\u0418\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u044b \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u043e\u0432", None))
     # retranslateUi
 
