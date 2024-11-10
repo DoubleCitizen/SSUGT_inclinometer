@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from datetime import datetime
 
@@ -49,6 +50,7 @@ class StreamController(QObject):
         ShootingSpeed.disable_sanctions()
 
     def connection_is_missing(self, esp32_name):
+        logging.info(f"Разорвано соединение с ВИМ: {esp32_name}")
         text_status = f"Разорвано соединение с ВИМ: {esp32_name}"
         icon = QIcon(u":/resource/resource/close.png")
         pixmap = icon.pixmap(16, 16)  # Установите размер иконки
@@ -57,6 +59,7 @@ class StreamController(QObject):
         GlobalController.get_status_esp_icon().setPixmap(pixmap)
 
     def connection_is_good(self, esp32_name):
+        logging.info(f"Успешное соединение с ВИМ: {esp32_name}")
         text_status = f"Успешное соединение с ВИМ: {esp32_name}"
         icon = QIcon(u":/resource/resource/check.png")
         pixmap = icon.pixmap(16, 16)  # Установите размер иконки
@@ -65,6 +68,7 @@ class StreamController(QObject):
         GlobalController.get_status_esp_icon().setPixmap(pixmap)
 
     def start_stream(self):
+        logging.info("Запущен стрим видеопотока")
         self.video_is_started = True
         esp32_name = ''
         APIController.check_is_video_capture(self.cap)
@@ -130,7 +134,9 @@ class StreamController(QObject):
                 # QMetaObject.invokeMethod(self.graphics_view_plot, "plot_build",
                 #                          Q_ARG(np.ndarray, frame))
                 # self.label_status.setText("Детект прошел успешно")
+                logging.info("Определение пузырька успешное")
             except Exception as e:
+                logging.warning("Не удалось обнаружить пузырек")
                 print(e)
                 # self.label_status.setText("Пузырек не удалось обнаружить")
 
@@ -156,6 +162,8 @@ class StreamController(QObject):
                     [formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y,
                      NivelTool.current_t,
                      str(temperature), str(indicator), points_x, points_y])
+                logging.info(
+                    f"Проведена запись в файл:\n{[formatted_time, center_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(temperature), str(indicator), points_x, points_y]}")
             else:
                 self.video_saver.release()
 
@@ -166,6 +174,7 @@ class StreamController(QObject):
                 break
             # except Exception as e:
             #     print(e)
+        logging.info(f"Стрим был остановлен")
         if APIController.get_is_video_capture():
             APIController.get_cap().release()
         self.connection_is_missing(esp32_name)

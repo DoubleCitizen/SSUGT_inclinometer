@@ -1,7 +1,9 @@
 # import requests
+import logging
 import os
 import signal
 import sys
+from datetime import datetime
 
 import numpy as np
 import cv2
@@ -33,6 +35,19 @@ def kill_process():
 
 
 if __name__ == "__main__":
+    # Указываем имя папки
+    folder_name = 'logs'
+
+    # Проверяем, существует ли папка
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)  # Создаем папку, если она не существует
+        print(f"Папка '{folder_name}' была создана.")
+    else:
+        print(f"Папка '{folder_name}' уже существует.")
+    # Получаем текущую дату и время в формате YYYY-MM-DD_HH-MM-SS
+    current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    logging.basicConfig(level=logging.INFO, filename=f"logs/py_log_{current_datetime}.log", filemode="w",
+                        format="%(asctime)s %(levelname)s %(message)s")
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
     MainWindow = Ui_MainWindow()  # Используйте ваш класс здесь

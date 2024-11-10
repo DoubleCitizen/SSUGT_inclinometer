@@ -56,8 +56,8 @@ class VideoPlayer(QThread):
                 self.horizontalSlider_video.setValue(0)
                 ret, frame_original = self.cap.read()
             if ret:
-                # points, frame, center_bubbles_px = self.segmentation.v2_frame_proccesing(frame)
-                points, frame, center_bubble = self.segmentation.new_frame_processing(frame_original.copy())
+                points, frame, center_bubbles_px = self.segmentation.v2_frame_proccesing(frame_original.copy())
+                # points, frame, center_bubble = self.segmentation.new_frame_processing(frame_original.copy())
                 self.horizontalSlider_video.setValue(self.horizontalSlider_video.value() + 1)
                 self.frameChanged.emit(frame_original, frame)
             self.mutex_1.unlock()

@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
+import logging
 
 from classes.GlobalController import GlobalController
 
@@ -11,7 +11,7 @@ class SegmentationBase:
         self.crop_y = 0
         self.crop_w = 0
         self.crop_h = 0
-
+        self.area_crop = None
     @staticmethod
     def delete_polygons(image):
         # Находим контуры на бинарном изображении
@@ -37,46 +37,26 @@ class SegmentationBase:
                 cv2.drawContours(result, [contour], 0, 0, -1)
         return result, max_contour
 
-    @staticmethod
-    def delete_closers_contours(cropped_image, edges, contours):
-        kernel = np.ones((3, 3), np.uint8)
-        edges = cv2.dilate(edges, kernel, iterations=9)
-        # Находжение контуров
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    def get_xywh_crop_from_contour(self, max_contour):
+        if self.crop_x == 0:
+            self.crop_x, self.crop_y, self.crop_w, self.crop_h = cv2.boundingRect(max_contour)
+        if self.area_crop is None:
+            x, y, w, h = cv2.boundingRect(max_contour)
+            self.area_crop = w * h
+        x, y, w, h = cv2.boundingRect(max_contour)
+        area_crop = w * h
+        if min(self.area_crop, area_crop) / max(self.area_crop, area_crop) < 0.8:
+            self.crop_x, self.crop_y, self.crop_w, self.crop_h = cv2.boundingRect(max_contour)
+            self.area_crop = self.crop_w * self.crop_h
 
-        # Минимальная площадь контура
-        max_area = float(0)
+        return self.crop_x, self.crop_y, self.crop_w, self.crop_h
 
-        height_img, width_img = edges.shape[:2]
+    def search_bubble(self, cropped_image, ret_th):
+        ret_th, thresh = cv2.threshold(cropped_image, 0, 255, cv2.THRESH_OTSU)
+        # ret_th, thresh = cv2.threshold(cropped_image, ret_th, 255, cv2.THRESH_BINARY)
+        cv2.imshow('thresh', thresh)
+        cv2.waitKey(1)
 
-        # Список контуров, которые нужно сохранить
-        valid_contours = []
-        idx = 0
-        for i, c in enumerate(contours):
-            area = cv2.contourArea(c)
-            x, y, w, h = cv2.boundingRect(c)
-            print(area)
-            if x < width_img * 0.15:
-                continue
-            if y < height_img * 0.1:
-                continue
-            if x + w > width_img * 0.85:
-                continue
-            if y + h > height_img * 0.9:
-                continue
-            if area > max_area:
-                max_area = area
-                idx = i
-                # valid_contours.append(c)
-
-        # Вывод результата
-        result = edges.copy() * 0
-        c = contours[idx]
-        cv2.drawContours(result, [c], -1, (255, 255, 255), 2)
-        # cv2.drawContours(result, contours, -1, (255, 255, 255), 2)
-        # cv2.drawContours()
-
-        return result
 
     def v2_frame_proccesing(self, frame_original):
         frame_original.copy()
@@ -85,23 +65,12 @@ class SegmentationBase:
         ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
 
         thresh, max_contour = self.delete_polygons(thresh)
-        x, y, w, h = cv2.boundingRect(max_contour)
+        x, y, w, h = self.get_xywh_crop_from_contour(max_contour)
+
         cropped_image = frame[y:y + h, x:x + w]  # обрезка изображения
-        ret_th, thresh = cv2.threshold(cropped_image, 0, 255, cv2.THRESH_OTSU)
-        # edges = cv2.Canny(cropped_image, 100, 200)
-        v = np.median(cropped_image)
-        sigma = 0.33
-        lower = int(max(0, (1.0 - sigma) * v))
-        upper = int(min(255, (1.0 + sigma) * v))
+        self.search_bubble(cropped_image, ret_th)
 
-        # Применение функции Canny с автоматически определёнными порогами
-        edges = cv2.Canny(cropped_image, lower, upper)
-
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(edges, contours, 0, 0, -1)
-        result = self.delete_closers_contours(cropped_image, edges, contours)
-
-        return result
+        return [], thresh, 0
 
     def new_frame_processing(self, frame_original):
         frame_result = frame_original.copy()
