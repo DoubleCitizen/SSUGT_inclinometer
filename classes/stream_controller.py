@@ -10,14 +10,17 @@ from PySide6.QtCore import Signal, QObject
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QLabel, QCheckBox
 from PySide6 import QtCore
+from sympy.physics.units import temperature
 
 from classes.APIController import APIController
 from classes.GlobalController import GlobalController
 from classes.GlobalVarialbles import GlobalVariables
 from classes.NivelTool import NivelTool
 from classes.ShootingSpeed import ShootingSpeed
+from classes.config_controller import ConfigController
 from classes.coordinate_system_offset import CoordinateSystemOffset
 from classes.math_module import MathModule
+from classes.modules.module_vim import ModuleVim
 from classes.segmentation_base import SegmentationBase
 from classes.value_saver import FileSaver
 from classes.video_saver import VideoSaver
@@ -71,74 +74,51 @@ class StreamController(QObject):
         logging.info("Запущен стрим видеопотока")
         self.video_is_started = True
         esp32_name = ''
-        APIController.check_is_video_capture(self.cap)
-        image = np.zeros((1, 1))
+        # APIController.check_is_video_capture(self.cap)
+        ModuleVim.set_sources([self.cap])
+        ModuleVim.start_stream()
+        temperature = 0
 
         while self.video_is_started:
             ShootingSpeed.enable_sanctions()
             if not ShootingSpeed.get_is_ready_shoot():
                 time.sleep(0.00000001)
                 continue
+            ModuleVim.update_data()
             # try:
-            if not APIController.get_is_video_capture():
-                esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
-            if esp32_name is None:
-                self.connection_is_missing(esp32_name)
-            elif esp32_name == '':
-                pass
-            else:
-                self.connection_is_good(esp32_name)
+            # if not APIController.get_is_video_capture():
+            #     esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
+            # if esp32_name is None:
+            #     self.connection_is_missing(esp32_name)
+            # elif esp32_name == '':
+            #     pass
+            # else:
+            #     self.connection_is_good(esp32_name)
 
-            frame, fps = APIController.get_frame()
+            #
+            frame, fps, esp32_name, center_bubbles_px, points, is_camera = ModuleVim.frame, ModuleVim.fps, ModuleVim.esp32_name, ModuleVim.center_bubbles_px, ModuleVim.points, ModuleVim.is_camera
             if frame is None:
                 self.video_is_started = False
                 self.connection_is_missing(esp32_name)
                 break
             GlobalController.get_label_fps_counter().setText(f"FPS = {round(fps)}")
-            frame_original = frame.copy()
+            # frame_original = frame.copy()
+            frame_original = frame
             height, width = frame.shape[:2]
             # fps = self.cap.get(cv2.CAP_PROP_FPS)
-            center_bubbles_px = None
-            points = np.array([])
 
             try:
-                image = frame
-                points, image, center_bubbles_px = self.segmentation.new_frame_processing(image)
-                CoordinateSystemOffset.set_temp_start_position(center_bubbles_px)
-                points, image, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, image,
-                                                                                               center_bubbles_px)
-                try:
-                    with open('data/params_linear_reg.json', 'r') as file:
-                        data_json = json.loads(file.read())
-                    value_a = data_json.get('a', 0)
-                    value_b = data_json.get('b', 0)
-                    units = data_json.get('units', "''")
-                    self.label_value.setText(f"ВИМ: {(center_bubbles_px * value_a) + value_b}{units}")
-                except:
-                    self.label_value.setText(f"ВИМ: {center_bubbles_px}пикс.")
-
-                # if GlobalController.is_draw_rectangle() or GlobalController.is_segmentaion_show():
-                # frame = cv2.cvtColor(crop_image, cv2.COLOR_GRAY2BGR)
-                # cv2.imshow("crop_image", crop_image)
-                # math_module = MathModule(x_array, y_array)
-
-                # X, v = math_module.coeff_mat_estimator2()
-                # a, b, c = X
-
-                # self.draw_parabola(a, b, c)
-                # if time.time() - timer_1 > 1:
-                #     timer_1 = time.time()
-                #     QMetaObject.invokeMethod(self.graphics_view_plot, "draw_parabola", QtCore.Qt.QueuedConnection,
-                #                              Q_ARG(float, a), Q_ARG(float, b),
-                #                              Q_ARG(float, c))
-                # QMetaObject.invokeMethod(self.graphics_view_plot, "plot_build",
-                #                          Q_ARG(np.ndarray, frame))
-                # self.label_status.setText("Детект прошел успешно")
-                logging.info("Определение пузырька успешное")
-            except Exception as e:
-                logging.warning("Не удалось обнаружить пузырек")
-                print(e)
-                # self.label_status.setText("Пузырек не удалось обнаружить")
+                data_json = ConfigController('data/params_linear_reg.json').load()
+                # with open('data/params_linear_reg.json', 'r') as file:
+                #     data_json = json.loads(file.read())
+                value_a = data_json.get('a', 0)
+                value_b = data_json.get('b', 0)
+                units = data_json.get('units', "''")
+                self.label_value.setText(f"ВИМ: {(center_bubbles_px * value_a) + value_b}{units}")
+            except:
+                self.label_value.setText(f"ВИМ: {center_bubbles_px}пикс.")
+            logging.info("Определение пузырька успешное")
+            # self.label_status.setText("Пузырек не удалось обнаружить")
 
             if self.video_saver.get_out() is None and GlobalController.is_recording() and self.video_saver.get_record_status() is False:
                 self.video_saver.initialize(
@@ -150,7 +130,8 @@ class StreamController(QObject):
                     headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'temperature',
                              'watch_indicator', 'points_x', 'points_y'],
                     sep=';')
-            temperature = APIController.get_temperature()
+            if is_camera:
+                temperature = APIController.get_temperature()
             GlobalController.get_label_vim_temperature().setText(f"t = {temperature}°C")
             if GlobalController.is_recording():
                 self.video_saver.write_frame(frame_original)
@@ -167,13 +148,11 @@ class StreamController(QObject):
             else:
                 self.video_saver.release()
 
-            key = cv2.waitKey(1)
-            self.signal_send_frame_graphics_view.emit(image)
+            self.signal_send_frame_graphics_view.emit(frame)
 
-            if key == ord('q'):
-                break
             # except Exception as e:
             #     print(e)
+        ModuleVim.stop_stream()
         logging.info(f"Стрим был остановлен")
         if APIController.get_is_video_capture():
             APIController.get_cap().release()

@@ -13,10 +13,29 @@ class APIController:
     _color_rgb = None
     _cap = None
     _is_video_capture: bool = False
+    _conn_multiprocessing = None
+
+    @classmethod
+    def get_all_data(cls):
+        return cls._ip, cls._color_rgb, cls._cap, cls._is_video_capture
+
+    @classmethod
+    def set_all_data(cls, data):
+        cls._ip, cls._color_rgb, cls._cap, cls._is_video_capture = data
+
+    @classmethod
+    def set_conn_multiprocessing(cls, conn):
+        cls._conn_multiprocessing = conn
+
+    @classmethod
+    def synchronize_data(cls):
+        if cls._conn_multiprocessing is not None:
+            cls._conn_multiprocessing.send((cls.get_all_data(), 'APIController_data'))
 
     @classmethod
     def set_is_video_capture(cls, state: bool):
         cls._is_video_capture = state
+        cls.synchronize_data()
 
     @classmethod
     def get_is_video_capture(cls):
@@ -27,6 +46,7 @@ class APIController:
         if cls._is_video_capture:
             return
         cls._color_rgb = rgb
+        cls.synchronize_data()
         print(rgb)
         # hsv_color = colorsys.rgb_to_hsv(*cls._color_rgb)
         # h, s, v = hsv_color
@@ -51,7 +71,7 @@ class APIController:
         except:
             cls._is_video_capture = True
             cls._cap = cv2.VideoCapture(cap)
-
+        cls.synchronize_data()
         # except ConnectionError:
         #     cls._is_video_capture = True
         #     cls._cap = cv2.VideoCapture(cap)
@@ -62,6 +82,7 @@ class APIController:
 
     @classmethod
     def get_frame(cls):
+        get_frame_time = time.time()
         logging.info("Отправлен запрос на получении кадра")
         if not cls._is_video_capture:
             timer = time.time()
@@ -78,6 +99,7 @@ class APIController:
             time_get_frame = time.time() - timer
             fps = 1 / time_get_frame
             logging.info("Был получен кадр от esp32")
+            is_camera = True
         else:
             fps = cls._cap.get(cv2.CAP_PROP_FPS)
             ret, frame = cls._cap.read()
@@ -85,8 +107,8 @@ class APIController:
                 logging.info("Был получен кадр через cap.read()")
             else:
                 logging.error(f"Ошибка в получении кадра cap.read()")
-
-        return frame, fps
+            is_camera = False
+        return frame, fps, is_camera
 
     @classmethod
     def get_name(cls):
@@ -125,6 +147,7 @@ class APIController:
     def set_ip(cls, value):
         logging.info(f"Был установлен ip адрес для опроса: {value}")
         cls._ip = value
+        cls.synchronize_data()
 
     @classmethod
     def get_ip(cls):

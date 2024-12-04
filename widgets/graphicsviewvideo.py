@@ -21,7 +21,10 @@ class QGraphicsViewVideo(QtWidgets.QGraphicsView):
 
         # print(height, width)
         # cv2.imshow("img_rgb", frame)
-        img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        if len(frame.shape) == 2:
+            img_rgb = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        else:
+            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         qImg = QImage(img_rgb, width, height, QImage.Format_RGB888)
         self.qImg = qImg
