@@ -3,9 +3,7 @@ import logging
 import multiprocessing
 import os
 import time
-from multiprocessing import shared_memory
 
-import cv2
 import numpy as np
 from PySide6.QtGui import QIcon
 
@@ -53,8 +51,8 @@ class ModuleVim:
 
     @classmethod
     def stop_stream(cls):
-        cls.module_parent_conn.send((cls.is_streaming, ProcessVIM.KILL_PROCESS))
         cls.is_streaming = False
+        cls.module_parent_conn.send((cls.is_streaming, ProcessVIM.KILL_PROCESS))
 
     @classmethod
     def update_data(cls):
@@ -73,8 +71,21 @@ class ModuleVim:
         APIController.set_all_data(data_api_controller)
         APIController.check_is_video_capture(source)
         sync_data = "Done"
+
+
         while vim_process_id is not None:
             time.sleep(0.00001)
+            if conn.poll(0.0001):
+                value, type_data = conn.recv()
+                match type_data:
+                    case ProcessVIM.PROCESS_ID:
+                        conn.send((ProcessVIM.PROCESS_ID, os.getpid()))
+                    case ProcessVIM.API_CONTROLLER_DATA:
+                        data_api_controller = value
+                        APIController.set_all_data(data_api_controller)
+                    case ProcessVIM.KILL_PROCESS:
+                        return
+
             if sync_conn.poll(0.0001):
                 sync_data = sync_conn.recv()
             if sync_data == "Done":
@@ -86,18 +97,7 @@ class ModuleVim:
                 conn.send(((points, center_bubbles_px, frame, fps, is_camera), ProcessVIM.DATA_FRAME))
                 sync_data = None
 
-            if conn.poll(0.0001):
-                value, type_data = conn.recv()
-                match type_data:
-                    case ProcessVIM.PROCESS_ID:
-                        conn.send((ProcessVIM.PROCESS_ID, os.getpid()))
-                    case ProcessVIM.API_CONTROLLER_DATA:
-                        data_api_controller = value
-                        APIController.set_all_data(data_api_controller)
-                    case ProcessVIM.KILL_PROCESS:
-                        vim_process_id = None
-                        break
-        print("Я умер")
+
 
     @classmethod
     def get_esp32_name(cls):
