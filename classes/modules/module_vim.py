@@ -32,7 +32,7 @@ class ModuleVim:
         self._frame: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
         self._frame_original: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
         self._is_camera = False
-        self._thread = threading.Thread(target=self.send_data)
+        self._thread = threading.Thread(target=self._prepare_send_data)
 
     @property
     def frame_original(self) -> np.ndarray:
@@ -88,16 +88,36 @@ class ModuleVim:
         self.module_parent_conn.send((self.is_streaming, ProcessVIM.KILL_PROCESS))
         self.is_streaming = False
 
-    def send_data(self):
+    def _prepare_send_data(self):
+        is_segmentation = False
+        is_draw_rectangle = False
+        is_draw_point = False
+        count_draw_points = 1
+        is_draw_start_position = False
         while self.is_streaming:
             time.sleep(0.00001)
-            is_segmentation = GlobalController.is_segmentaion_show()
-            is_draw_rectangle = GlobalController.is_draw_rectangle()
-            is_draw_point = GlobalController.is_draw_points()
-            count_draw_points = GlobalController.get_count_draw_points()
-            is_draw_start_position = GlobalController.is_draw_start_position()
-            self.module_parent_conn.send(
-                ((is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position), ProcessVIM.DRAW_OPTIONS))
+            new_is_segmentation = GlobalController.is_segmentaion_show()
+            new_is_draw_rectangle = GlobalController.is_draw_rectangle()
+            new_is_draw_point = GlobalController.is_draw_points()
+            new_count_draw_points = GlobalController.get_count_draw_points()
+            new_is_draw_start_position = GlobalController.is_draw_start_position()
+            if is_segmentation != new_is_segmentation or \
+                    is_draw_rectangle != new_is_draw_rectangle or \
+                    is_draw_point != new_is_draw_point or \
+                    count_draw_points != new_count_draw_points or \
+                    is_draw_start_position != new_is_draw_start_position:
+                is_segmentation = new_is_segmentation
+                is_draw_rectangle = new_is_draw_rectangle
+                is_draw_point = new_is_draw_point
+                count_draw_points = new_count_draw_points
+                is_draw_start_position = new_is_draw_start_position
+                self._send_data(is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points,
+                                is_draw_start_position)
+
+    def _send_data(self, is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position):
+        self.module_parent_conn.send(
+            ((is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position),
+             ProcessVIM.DRAW_OPTIONS))
 
     def update_data(self):
         if self.module_parent_conn.poll():
@@ -134,7 +154,8 @@ class ModuleVim:
                     continue
                 CoordinateSystemOffset.set_temp_start_position(center_bubbles_px)
                 points, frame, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, frame,
-                                                                                               center_bubbles_px, is_draw_start_position)
+                                                                                               center_bubbles_px,
+                                                                                               is_draw_start_position)
                 conn.send(((points, center_bubbles_px, frame, frame_original, fps, is_camera), ProcessVIM.DATA_FRAME))
                 sync_data = None
 
