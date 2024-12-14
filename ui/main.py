@@ -43,6 +43,8 @@ class Ui_MainWindow(object):
         self.action_static_mode.setCheckable(True)
         self.action_main_window = QAction(MainWindow)
         self.action_main_window.setObjectName(u"action_main_window")
+        self.action_open_directory = QAction(MainWindow)
+        self.action_open_directory.setObjectName(u"action_open_directory")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         palette = QPalette()
@@ -325,6 +327,7 @@ class Ui_MainWindow(object):
         self.menu_tools.addAction(self.action_esp32)
         self.menu.addAction(self.action_static_mode)
         self.menu_2.addAction(self.action_main_window)
+        self.menu_2.addAction(self.action_open_directory)
 
         self.retranslateUi(MainWindow)
 
@@ -338,6 +341,7 @@ class Ui_MainWindow(object):
         self.action_esp32.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c esp32", None))
         self.action_static_mode.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u043e\u0431\u0440\u0430\u0437\u0438\u0442\u044c \u0440\u0435\u0436\u0438\u043c \u0441\u0442\u0430\u0442\u0438\u043a\u0438", None))
         self.action_main_window.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u0433\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e", None))
+        self.action_open_directory.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440\u0438\u044e", None))
         self.label_nivel.setText(QCoreApplication.translate("MainWindow", u"Nivel", None))
         self.label_vim_temp.setText(QCoreApplication.translate("MainWindow", u"\u0422\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0430 \u0412\u0418\u041c", None))
         self.label_value.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0418\u041c", None))

@@ -512,6 +512,7 @@
      <string>Меню</string>
     </property>
     <addaction name="action_main_window"/>
+    <addaction name="action_open_directory"/>
    </widget>
    <addaction name="menu_2"/>
    <addaction name="menu_tools"/>
@@ -544,6 +545,11 @@
   <action name="action_main_window">
    <property name="text">
     <string>Вернуться в главное меню</string>
+   </property>
+  </action>
+  <action name="action_open_directory">
+   <property name="text">
+    <string>Открыть директорию</string>
    </property>
   </action>
  </widget>

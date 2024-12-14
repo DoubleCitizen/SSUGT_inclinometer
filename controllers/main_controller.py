@@ -1,3 +1,6 @@
+import os
+import subprocess
+
 import cv2
 import threading
 
@@ -140,10 +143,16 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
 
         self.add_actions()
 
+    @staticmethod
+    def open_directory():
+        path = os.getcwd() + '\\data'
+        subprocess.Popen(['explorer', path])
+
     def add_actions(self):
         NivelTool.set_action_nivel_220(self.menu_Nivel_220)
         NivelTool.set_label_nivel_220(self.label_nivel)
         self.menu_tools.aboutToShow.connect(self.update_list_com_ports)
+        self.action_open_directory.triggered.connect(self.open_directory)
         self.action_dialog_regres.triggered.connect(self.open_dialog_parameters_reg)
         self.action_esp32.triggered.connect(self.open_dialog_esp32)
         self.action_static_mode.triggered.connect(self.switch_mode_static)
