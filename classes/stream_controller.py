@@ -44,6 +44,7 @@ class StreamController(QObject):
         self.video_saver = VideoSaver()
         self.file_saver = FileSaver()
         self.signal_send_frame_graphics_view = signal_send_frame_graphics_view
+        self.module_vim = ModuleVim()
 
     def send_frame_on_graphics_view(self, frame: np.ndarray):
         self.graphics_view.image_cv(frame)
@@ -75,8 +76,8 @@ class StreamController(QObject):
         self.video_is_started = True
         esp32_name = ''
         # APIController.check_is_video_capture(self.cap)
-        ModuleVim.set_sources([self.cap])
-        ModuleVim.start_stream()
+        self.module_vim.set_source(self.cap)
+        self.module_vim.start_stream()
         temperature = 0
 
         while self.video_is_started:
@@ -84,7 +85,7 @@ class StreamController(QObject):
             if not ShootingSpeed.get_is_ready_shoot():
                 time.sleep(0.00000001)
                 continue
-            ModuleVim.update_data()
+            self.module_vim.update_data()
             # try:
             # if not APIController.get_is_video_capture():
             #     esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
@@ -96,14 +97,16 @@ class StreamController(QObject):
             #     self.connection_is_good(esp32_name)
 
             #
-            frame, fps, esp32_name, center_bubbles_px, points, is_camera = ModuleVim.frame, ModuleVim.fps, ModuleVim.esp32_name, ModuleVim.center_bubbles_px, ModuleVim.points, ModuleVim.is_camera
+            frame, frame_original, fps, esp32_name, center_bubbles_px, points, is_camera = (
+                self.module_vim.frame, self.module_vim.frame_original, self.module_vim.fps, self.module_vim.esp32_name,
+                self.module_vim.center_bubbles_px,
+                self.module_vim.points, self.module_vim.is_camera)
             if frame is None:
                 self.video_is_started = False
                 self.connection_is_missing(esp32_name)
                 break
             GlobalController.get_label_fps_counter().setText(f"FPS = {round(fps)}")
             # frame_original = frame.copy()
-            frame_original = frame
             height, width = frame.shape[:2]
             # fps = self.cap.get(cv2.CAP_PROP_FPS)
 
@@ -152,7 +155,7 @@ class StreamController(QObject):
 
             # except Exception as e:
             #     print(e)
-        ModuleVim.stop_stream()
+        self.module_vim.stop_stream()
         logging.info(f"Стрим был остановлен")
         if APIController.get_is_video_capture():
             APIController.get_cap().release()

@@ -29,11 +29,11 @@ class CoordinateSystemOffset:
 
     @classmethod
     def get_new_image_coords(cls, points: np.ndarray, image: np.ndarray,
-                             center_bubble: float) -> np.ndarray | list | float:
+                             center_bubble: float, is_draw_start_position: bool = False) -> np.ndarray | list | float:
         x = int(cls.get_start_position())
         y1 = 0
         y2 = int(image.shape[0])
-        if GlobalController.is_draw_start_position():
+        if is_draw_start_position:
             image = cv2.line(image, (x, y1), (x, y2), (255, 0, 0), thickness=10)
         center_bubble -= cls.get_start_position()
         points[:, 0] -= np.int32(cls.get_start_position())

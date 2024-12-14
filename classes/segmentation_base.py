@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import logging
 
-from classes.GlobalController import GlobalController
-
 
 class SegmentationBase:
     def __init__(self):
@@ -12,6 +10,7 @@ class SegmentationBase:
         self.crop_w = 0
         self.crop_h = 0
         self.area_crop = None
+
     @staticmethod
     def delete_polygons(image):
         # Находим контуры на бинарном изображении
@@ -57,7 +56,6 @@ class SegmentationBase:
         cv2.imshow('thresh', thresh)
         cv2.waitKey(1)
 
-
     def v2_frame_proccesing(self, frame_original):
         frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
@@ -72,7 +70,9 @@ class SegmentationBase:
 
         return [], thresh, 0
 
-    def new_frame_processing(self, frame_original):
+    def new_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
+                             is_draw_rectangle: bool = False,
+                             is_draw_points: bool = False, count_draw_points: int = 1):
         frame_result = frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
         ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
@@ -188,18 +188,18 @@ class SegmentationBase:
 
         x, y, w, h = x + x_2, y + y_2, w, h
         new_frame = None
-        if GlobalController.is_segmentaion_show():
+        if is_segmentaion_show:
             new_frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-        if GlobalController.is_draw_rectangle():
+        if is_draw_rectangle:
             if new_frame is None:
                 new_frame = cv2.rectangle(frame_original, (x, y), (x + w, y + h), (0, 255, 0), 5)
             else:
                 new_frame = cv2.rectangle(new_frame, (x, y), (x + w, y + h), (0, 255, 0), 5)
-        if GlobalController.is_draw_points():
+        if is_draw_points:
             if new_frame is None:
                 new_frame = frame_original
 
-            for i in range(0, x_array.shape[0], GlobalController.get_spinBox_points().value()):
+            for i in range(0, x_array.shape[0], count_draw_points):
                 x_cir = x_array[i]
                 y_cir = y_array[i]
                 radius = 5

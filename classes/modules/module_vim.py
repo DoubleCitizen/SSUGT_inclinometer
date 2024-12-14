@@ -2,10 +2,9 @@ import json
 import logging
 import multiprocessing
 import os
+import threading
 import time
-from multiprocessing import shared_memory
 
-import cv2
 import numpy as np
 from PySide6.QtGui import QIcon
 
@@ -17,55 +16,98 @@ from classes.segmentation_base import SegmentationBase
 
 
 class ModuleVim:
-    sources: list = []
-    is_streaming: bool = False
-    module_parent_conn, module_child_conn = multiprocessing.Pipe()
-    module_parent_sync_conn, module_child_sync_conn = multiprocessing.Pipe()
-    segmentation = SegmentationBase()
-    vim_process = None
-    vim_process_id = None
-    esp32_name = ''
-    points = []
-    center_bubbles_px = 0
-    fps = 0
-    frame = np.zeros((1,1,3), dtype=np.uint8)
-    is_camera = False
+    def __init__(self, source: str | None = None):
+        self._source = source
+        self._source: None | str = None
+        self.is_streaming: bool = False
+        self.module_parent_conn, self.module_child_conn = multiprocessing.Pipe()
+        self.module_parent_sync_conn, self.module_child_sync_conn = multiprocessing.Pipe()
+        self.segmentation = SegmentationBase()
+        self.vim_process = None
+        self.vim_process_id = None
+        self._esp32_name = ''
+        self._points = []
+        self._center_bubbles_px = 0
+        self._fps = 0
+        self._frame: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
+        self._frame_original: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
+        self._is_camera = False
+        self._thread = threading.Thread(target=self.send_data)
 
-    @classmethod
-    def add_source(cls, source: str):
-        cls.sources.append(source)
+    @property
+    def frame_original(self) -> np.ndarray:
+        return self._frame_original
 
-    @classmethod
-    def set_sources(cls, sources: list[str]):
-        cls.sources = sources
+    @property
+    def is_camera(self) -> bool:
+        return self._is_camera
 
-    @classmethod
-    def clear_sources(cls):
-        cls.sources = []
+    @property
+    def points(self) -> list:
+        return self._points
 
-    @classmethod
-    def start_stream(cls):
-        cls.is_streaming = True
+    @property
+    def center_bubbles_px(self) -> float:
+        return self._center_bubbles_px
+
+    @property
+    def esp32_name(self) -> str:
+        return self._esp32_name
+
+    @property
+    def fps(self) -> int:
+        return self._fps
+
+    @property
+    def frame(self) -> np.ndarray:
+        return self._frame
+
+    @property
+    def source(self) -> str:
+        return self._source
+
+    @source.setter
+    def source(self, source: str):
+        self._source = source
+
+    def set_source(self, source: str):
+        self._source = source
+
+    def clear_source(self):
+        self._source = None
+
+    def start_stream(self):
+        self.is_streaming = True
         data_api_controller = APIController.get_all_data()
-        cls.vim_process = multiprocessing.Process(target=cls.processing, args=(
-            cls.module_child_conn, cls.module_child_sync_conn, cls.segmentation, data_api_controller,
-            cls.sources[0])).start()
+        self._thread.start()
+        self.vim_process = multiprocessing.Process(target=self.processing, args=(
+            self.module_child_conn, self.module_child_sync_conn, self.segmentation, data_api_controller,
+            self._source)).start()
 
-    @classmethod
-    def stop_stream(cls):
-        cls.module_parent_conn.send((cls.is_streaming, ProcessVIM.KILL_PROCESS))
-        cls.is_streaming = False
+    def stop_stream(self):
+        self.module_parent_conn.send((self.is_streaming, ProcessVIM.KILL_PROCESS))
+        self.is_streaming = False
 
-    @classmethod
-    def update_data(cls):
-        if cls.module_parent_conn.poll():
-            value, type_data = cls.module_parent_conn.recv()
+    def send_data(self):
+        while self.is_streaming:
+            time.sleep(0.00001)
+            is_segmentation = GlobalController.is_segmentaion_show()
+            is_draw_rectangle = GlobalController.is_draw_rectangle()
+            is_draw_point = GlobalController.is_draw_points()
+            count_draw_points = GlobalController.get_count_draw_points()
+            is_draw_start_position = GlobalController.is_draw_start_position()
+            self.module_parent_conn.send(
+                ((is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position), ProcessVIM.DRAW_OPTIONS))
+
+    def update_data(self):
+        if self.module_parent_conn.poll():
+            value, type_data = self.module_parent_conn.recv()
             match type_data:
                 case ProcessVIM.DATA_FRAME:
-                    cls.points, cls.center_bubbles_px, cls.frame, cls.fps, cls.is_camera = value
-                    cls.module_parent_sync_conn.send('Done')
+                    self._points, self._center_bubbles_px, self._frame, self._frame_original, self._fps, self._is_camera = value
+                    self.module_parent_sync_conn.send('Done')
                 case ProcessVIM.PROCESS_ID:
-                    cls.vim_process_id = value
+                    self.vim_process_id = value
 
     @staticmethod
     def processing(conn, sync_conn, segmentation, data_api_controller, source):
@@ -73,20 +115,30 @@ class ModuleVim:
         APIController.set_all_data(data_api_controller)
         APIController.check_is_video_capture(source)
         sync_data = "Done"
+        is_segmentation = False
+        is_draw_rectangle = False
+        is_draw_point = False
+        is_draw_start_position = False
+        count_draw_points = 1
         while vim_process_id is not None:
             time.sleep(0.00001)
-            if sync_conn.poll(0.0001):
+            if sync_conn.poll(0.00001):
                 sync_data = sync_conn.recv()
             if sync_data == "Done":
-                frame, fps, is_camera = APIController.get_frame()
-                points, frame, center_bubbles_px = segmentation.new_frame_processing(frame)
+                frame_original, fps, is_camera = APIController.get_frame()
+                points, frame, center_bubbles_px = segmentation.new_frame_processing(frame_original.copy(),
+                                                                                     is_segmentation,
+                                                                                     is_draw_rectangle, is_draw_point,
+                                                                                     count_draw_points)
+                if len(points) <= 0:
+                    continue
                 CoordinateSystemOffset.set_temp_start_position(center_bubbles_px)
                 points, frame, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, frame,
-                                                                                               center_bubbles_px)
-                conn.send(((points, center_bubbles_px, frame, fps, is_camera), ProcessVIM.DATA_FRAME))
+                                                                                               center_bubbles_px, is_draw_start_position)
+                conn.send(((points, center_bubbles_px, frame, frame_original, fps, is_camera), ProcessVIM.DATA_FRAME))
                 sync_data = None
 
-            if conn.poll(0.0001):
+            if conn.poll(0.00001):
                 value, type_data = conn.recv()
                 match type_data:
                     case ProcessVIM.PROCESS_ID:
@@ -94,21 +146,20 @@ class ModuleVim:
                     case ProcessVIM.API_CONTROLLER_DATA:
                         data_api_controller = value
                         APIController.set_all_data(data_api_controller)
+                    case ProcessVIM.DRAW_OPTIONS:
+                        is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position = value
                     case ProcessVIM.KILL_PROCESS:
-                        vim_process_id = None
-                        break
-        print("Я умер")
+                        return
 
-    @classmethod
-    def get_esp32_name(cls):
+    def get_esp32_name(self):
         if not APIController.get_is_video_capture():
-            cls.esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
-        if cls.esp32_name is None:
-            cls.connection_is_missing(cls.esp32_name)
-        elif cls.esp32_name == '':
+            self._esp32_name = json.loads(APIController.get_name().content).get("name", "esp32")
+        if self._esp32_name is None:
+            self.connection_is_missing(self._esp32_name)
+        elif self._esp32_name == '':
             pass
         else:
-            cls.connection_is_good(cls.esp32_name)
+            self.connection_is_good(self._esp32_name)
 
     @staticmethod
     def connection_is_missing(esp32_name):

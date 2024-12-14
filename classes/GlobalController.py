@@ -78,6 +78,10 @@ class GlobalController:
         return cls._spinBox_points
 
     @classmethod
+    def get_count_draw_points(cls) -> int:
+        return cls.get_spinBox_points().value()
+
+    @classmethod
     def set_checkBox_rectangle_show(cls, value):
         cls._checkBox_rectangle_show = value
 
