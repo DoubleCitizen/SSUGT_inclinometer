@@ -23,7 +23,7 @@ class ModuleVim:
         self.module_parent_conn, self.module_child_conn = multiprocessing.Pipe()
         self.module_parent_sync_conn, self.module_child_sync_conn = multiprocessing.Pipe()
         self.segmentation = SegmentationBase()
-        self.vim_process = None
+        self.vim_process: multiprocessing.Process | None = None
         self.vim_process_id = None
         self._esp32_name = ''
         self._points = []
@@ -82,11 +82,12 @@ class ModuleVim:
         self._thread.start()
         self.vim_process = multiprocessing.Process(target=self.processing, args=(
             self.module_child_conn, self.module_child_sync_conn, self.segmentation, data_api_controller,
-            self._source)).start()
+            self._source))
+        self.vim_process.start()
 
     def stop_stream(self):
-        self.module_parent_conn.send((self.is_streaming, ProcessVIM.KILL_PROCESS))
         self.is_streaming = False
+        self.vim_process.terminate()
 
     def _prepare_send_data(self):
         is_segmentation = False
