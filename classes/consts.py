@@ -7,6 +7,7 @@ class ProcessVIM:
     PROCESS_ID = 'process_id'
     API_CONTROLLER_DATA = 'APIController_data'
     DATA_FRAME = 'pfcbf'
+    VIDEO_IS_OVER = 'VIDEO_IS_OVER'
     KILL_PROCESS = 'kill_process'
     IS_SEGMENTATION_SHOW = 'IS_SEGMENTATION_SHOW'
     IS_DRAW_RECTANGLE = 'IS_DRAW_RECTANGLE'

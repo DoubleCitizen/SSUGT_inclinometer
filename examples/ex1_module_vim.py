@@ -3,11 +3,22 @@ import cv2
 from classes.modules.module_vim import ModuleVim
 
 
-# Функция обратного вызова для трекбара
 def nothing(x):
+    """
+    Trackbar callback function
+
+    Args:
+        x: Any
+    """
     pass
 
-def update_get_data_from_trackbars(module_vim):
+def update_get_data_from_trackbars(module_vim: ModuleVim):
+    """
+    The function updates the rendering variables
+
+    Args:
+        module_vim (ModuleVim): Object of class ModuleVim
+    """
     new_is_segmentation = bool(cv2.getTrackbarPos('new_is_segmentation', 'Trackbars'))
     new_is_draw_rectangle = bool(cv2.getTrackbarPos('new_is_draw_rectangle', 'Trackbars'))
     new_is_draw_point = bool(cv2.getTrackbarPos('new_is_draw_point', 'Trackbars'))
@@ -23,10 +34,10 @@ def update_get_data_from_trackbars(module_vim):
 
 if __name__ == '__main__':
 
-    # Создаем окно
+    # Creating window
     cv2.namedWindow('Trackbars')
 
-    # Создаем трекбары для булевых переменных
+    # Creating trackbars for boolean variables
     cv2.createTrackbar('new_is_segmentation', 'Trackbars', 0, 1, nothing)
     cv2.createTrackbar('new_is_draw_rectangle', 'Trackbars', 0, 1, nothing)
     cv2.createTrackbar('new_is_draw_point', 'Trackbars', 0, 1, nothing)
@@ -37,7 +48,7 @@ if __name__ == '__main__':
     module_vim.start_stream()
 
     video_is_started = True
-    while video_is_started:
+    while module_vim.is_streaming:
         update_get_data_from_trackbars(module_vim)
 
         module_vim.update_data()

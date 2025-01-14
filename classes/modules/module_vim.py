@@ -18,7 +18,7 @@ from classes.segmentation_base import SegmentationBase
 class ModuleVim:
     def __init__(self, source: str | None = None):
         self._source: None | str = source
-        self.is_streaming: bool = False
+        self._is_streaming: bool = False
         self.module_parent_conn, self.module_child_conn = multiprocessing.Pipe()
         self.module_parent_sync_conn, self.module_child_sync_conn = multiprocessing.Pipe()
         self.segmentation = SegmentationBase()
@@ -124,6 +124,14 @@ class ModuleVim:
     def source(self, source: str):
         self._source = source
 
+    @property
+    def is_streaming(self):
+        return self._is_streaming
+
+    @is_streaming.setter
+    def is_streaming(self, is_streaming):
+        self._is_streaming = is_streaming
+
     def set_source(self, source: str):
         self._source = source
 
@@ -131,7 +139,7 @@ class ModuleVim:
         self._source = None
 
     def start_stream(self):
-        self.is_streaming = True
+        self._is_streaming = True
 
         data_api_controller = APIController.get_all_data()
         self._thread.start()
@@ -141,7 +149,7 @@ class ModuleVim:
         self.vim_process.start()
 
     def stop_stream(self):
-        self.is_streaming = False
+        self._is_streaming = False
         self.vim_process.terminate()
 
     def _prepare_send_data(self):
@@ -150,7 +158,7 @@ class ModuleVim:
         is_draw_point = False
         count_draw_points = 1
         is_draw_start_position = False
-        while self.is_streaming:
+        while self._is_streaming:
             time.sleep(0.00001)
             new_is_segmentation = self.is_segmentation
             new_is_draw_rectangle = self.is_draw_rectangle
@@ -182,6 +190,8 @@ class ModuleVim:
                 case ProcessVIM.DATA_FRAME:
                     self._points, self._center_bubbles_px, self._frame, self._frame_original, self._fps, self._is_camera = value
                     self.module_parent_sync_conn.send('Done')
+                case ProcessVIM.VIDEO_IS_OVER:
+                    self.stop_stream()
                 case ProcessVIM.PROCESS_ID:
                     self.vim_process_id = value
 
@@ -202,6 +212,9 @@ class ModuleVim:
                 sync_data = sync_conn.recv()
             if sync_data == "Done":
                 frame_original, fps, is_camera = APIController.get_frame()
+                if frame_original is None:
+                    conn.send((False, ProcessVIM.VIDEO_IS_OVER))
+                    break
                 points, frame, center_bubbles_px = segmentation.new_frame_processing(frame_original.copy(),
                                                                                      is_segmentation,
                                                                                      is_draw_rectangle, is_draw_point,
