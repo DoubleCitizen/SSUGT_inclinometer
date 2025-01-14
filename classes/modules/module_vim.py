@@ -17,8 +17,7 @@ from classes.segmentation_base import SegmentationBase
 
 class ModuleVim:
     def __init__(self, source: str | None = None):
-        self._source = source
-        self._source: None | str = None
+        self._source: None | str = source
         self.is_streaming: bool = False
         self.module_parent_conn, self.module_child_conn = multiprocessing.Pipe()
         self.module_parent_sync_conn, self.module_child_sync_conn = multiprocessing.Pipe()
@@ -33,6 +32,61 @@ class ModuleVim:
         self._frame_original: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
         self._is_camera = False
         self._thread = threading.Thread(target=self._prepare_send_data)
+        self._is_segmentation: bool | None = None
+        self._is_draw_rectangle: bool | None = None
+        self._is_draw_point: bool | None = None
+        self._count_draw_points: int | None = None
+        self._is_draw_start_position: bool | None = None
+
+    @property
+    def is_segmentation(self):
+        if self._is_segmentation is None:
+            return GlobalController.is_segmentaion_show()
+        return self._is_segmentation
+
+    @property
+    def is_draw_rectangle(self):
+        if self._is_draw_rectangle is None:
+            return GlobalController.is_draw_rectangle()
+        return self._is_draw_rectangle
+
+    @property
+    def is_draw_point(self):
+        if self._is_draw_point is None:
+            return GlobalController.is_draw_points()
+        return self._is_draw_point
+
+    @property
+    def count_draw_points(self):
+        if self._count_draw_points is None:
+            return GlobalController.get_count_draw_points()
+        return self._count_draw_points
+
+    @property
+    def is_draw_start_position(self):
+        if self._is_draw_start_position is None:
+            return GlobalController.is_draw_start_position()
+        return self._is_draw_start_position
+
+    @is_segmentation.setter
+    def is_segmentation(self, is_segmentation):
+        self._is_segmentation = is_segmentation
+
+    @is_draw_rectangle.setter
+    def is_draw_rectangle(self, is_draw_rectangle):
+        self._is_draw_rectangle = is_draw_rectangle
+
+    @is_draw_point.setter
+    def is_draw_point(self, is_draw_point):
+        self._is_draw_point = is_draw_point
+
+    @count_draw_points.setter
+    def count_draw_points(self, count_draw_points):
+        self._count_draw_points = count_draw_points
+
+    @is_draw_start_position.setter
+    def is_draw_start_position(self, is_draw_start_position):
+        self._is_draw_start_position = is_draw_start_position
 
     @property
     def frame_original(self) -> np.ndarray:
@@ -78,6 +132,7 @@ class ModuleVim:
 
     def start_stream(self):
         self.is_streaming = True
+
         data_api_controller = APIController.get_all_data()
         self._thread.start()
         self.vim_process = multiprocessing.Process(target=self.processing, args=(
@@ -97,11 +152,11 @@ class ModuleVim:
         is_draw_start_position = False
         while self.is_streaming:
             time.sleep(0.00001)
-            new_is_segmentation = GlobalController.is_segmentaion_show()
-            new_is_draw_rectangle = GlobalController.is_draw_rectangle()
-            new_is_draw_point = GlobalController.is_draw_points()
-            new_count_draw_points = GlobalController.get_count_draw_points()
-            new_is_draw_start_position = GlobalController.is_draw_start_position()
+            new_is_segmentation = self.is_segmentation
+            new_is_draw_rectangle = self.is_draw_rectangle
+            new_is_draw_point = self.is_draw_point
+            new_count_draw_points = self.count_draw_points
+            new_is_draw_start_position = self.is_draw_start_position
             if is_segmentation != new_is_segmentation or \
                     is_draw_rectangle != new_is_draw_rectangle or \
                     is_draw_point != new_is_draw_point or \
