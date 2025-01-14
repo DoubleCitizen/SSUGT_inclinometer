@@ -43,7 +43,7 @@ if __name__ == '__main__':
     cv2.createTrackbar('new_is_draw_point', 'Trackbars', 0, 1, nothing)
     cv2.createTrackbar('new_count_draw_points', 'Trackbars', 1, 100, nothing)
     cv2.createTrackbar('new_is_draw_start_position', 'Trackbars', 0, 1, nothing)
-    module_vim = ModuleVim('C:\\Users\\user\\PycharmProjects\\SSUGT_inclinometer\\3.mkv')
+    module_vim = ModuleVim('C:\\Users\\user\\PycharmProjects\\SSUGT_inclinometer\\3.mp4')
     update_get_data_from_trackbars(module_vim)
     module_vim.start_stream()
 
