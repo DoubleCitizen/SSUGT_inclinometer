@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineE
 import pickle
 
 from classes.APIController import APIController
+from classes.DevicesController import DevicesController
 from classes.GlobalController import GlobalController
 from classes.config_controller import ConfigController
 
@@ -44,7 +45,7 @@ class ChangeNameMenu(QMenu):
         self.addAction(self.cancel_action)
 
     def exec(self, event):
-        super().exec(event)
+        super().exec_(event)
         if self._is_change_name:
             return self.textbox.text()
 
@@ -135,7 +136,7 @@ class Esp32Dialog(QDialog):
     def openColorDialog(self):
         color = self.color_dialog.getColor()
         rgb = color.getRgb()[:-1]
-        APIController.set_color_rgb(rgb)
+        DevicesController.get_vim_api_class().set_color_rgb(rgb)
         self.save()
         self.color_widget.setStyleSheet(f"background-color: rgb({int(rgb[0])}, {int(rgb[1])}, {int(rgb[2])})")
 
@@ -187,7 +188,7 @@ class Esp32Dialog(QDialog):
         ip = self.lineEdit_placeholder.text()
         ip = ip.replace('http://', '')
         ip = ip.replace('/', '')
-        APIController.set_ip(ip)
+        DevicesController.get_vim_api_class().set_ip(ip)
         video_capture = self.lineEdit_placeholder.text() + self.lineEdit_stream.text()
         GlobalController.set_video_capture_source(video_capture)
 
