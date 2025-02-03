@@ -57,12 +57,14 @@ class EspListWidget(QListWidget):
 
     def contextMenuEvent(self, event):
         menu = QMenu()
-        action1 = QAction("Подключиться", self)
-        action2 = QAction("Изменить имя", self)
+        action1 = QAction("Подключить vim", self)
+        action2 = QAction("Подключить laser", self)
+        action3 = QAction("Изменить имя", self)
         menu.addAction(action1)
         menu.addAction(action2)
+        menu.addAction(action3)
         action = menu.exec(self.mapToGlobal(event.pos()))
-        if action == action2:
+        if action == action3:
             ip = self.selectedItems()[0].text().split('\t')[0]
             name = self.selectedItems()[0].text().split('\t')[-1]
             name = ChangeNameMenu(name=name).exec(self.mapToGlobal(event.pos()))
@@ -88,9 +90,12 @@ class Esp32Dialog(QDialog):
         self.pushButton_refresh = QPushButton("Обновить")
         self.pushButton_refresh.clicked.connect(self.refresh_ip_info)
 
-        self.pushButton_connect = QPushButton("Подключиться")
-        self.pushButton_connect.clicked.connect(self.connect_ip)
-        self.pushButton_connect.clicked.connect(self.update_video_capture_info)
+        self.pushButton_connect_vim = QPushButton("Подключиться vim")
+        self.pushButton_connect_vim.clicked.connect(self.connect_ip)
+        self.pushButton_connect_vim.clicked.connect(self.update_video_capture_info_vim)
+        self.pushButton_connect_laser = QPushButton("Подключиться laser")
+        self.pushButton_connect_laser.clicked.connect(self.connect_ip)
+        self.pushButton_connect_laser.clicked.connect(self.update_video_capture_info_laser)
         self.button_color_picker = QPushButton("Выбрать цвет", self)
         self.button_color_picker.clicked.connect(self.openColorDialog)
         self.color_dialog = QColorDialog()
@@ -107,20 +112,21 @@ class Esp32Dialog(QDialog):
             ":81/stream (НЕ РАБОТАЕТ!!! получение непрерывных кадров VideoCapture)"
         ])
         self.comboBox.currentIndexChanged.connect(self.combobox_index_changed)
-        self.lineEdit_placeholder.textChanged.connect(self.update_video_capture_info)
-        self.lineEdit_stream.textChanged.connect(self.update_video_capture_info)
+        self.lineEdit_placeholder.textChanged.connect(self.update_video_capture_info_vim)
+        self.lineEdit_stream.textChanged.connect(self.update_video_capture_info_vim)
 
         self.refresh_ip_info()
         # Кнопка отправки
 
         layout.addWidget(self.list_widget_ip_addresses, 0, 0, 1, 2)
-        layout.addWidget(self.pushButton_refresh, 1, 0)
-        layout.addWidget(self.pushButton_connect, 1, 1)
-        layout.addWidget(self.lineEdit_placeholder, 2, 0)
-        layout.addWidget(self.lineEdit_stream, 2, 1)
-        layout.addWidget(self.comboBox, 3, 0, 1, 2)
-        layout.addWidget(self.color_widget, 4, 0, 1, 2)
-        layout.addWidget(self.button_color_picker, 5, 0, 1, 2)
+        layout.addWidget(self.pushButton_refresh, 1, 0, 1, 2)
+        layout.addWidget(self.pushButton_connect_vim, 2, 0)
+        layout.addWidget(self.pushButton_connect_laser, 2, 1)
+        layout.addWidget(self.lineEdit_placeholder, 3, 0)
+        layout.addWidget(self.lineEdit_stream, 3, 1)
+        layout.addWidget(self.comboBox, 4, 0, 1, 2)
+        layout.addWidget(self.color_widget, 5, 0, 1, 2)
+        layout.addWidget(self.button_color_picker, 6, 0, 1, 2)
 
         self.setLayout(layout)
         self.load()
@@ -131,7 +137,7 @@ class Esp32Dialog(QDialog):
                 self.lineEdit_stream.setText("/get_image")
             case 1:
                 self.lineEdit_stream.setText(":81/stream")
-        self.update_video_capture_info()
+        self.update_video_capture_info_vim()
 
     def openColorDialog(self):
         color = self.color_dialog.getColor()
@@ -183,14 +189,23 @@ class Esp32Dialog(QDialog):
 
         # self.color_dialog.setCo
 
-    def update_video_capture_info(self):
+    def update_video_capture_info_vim(self):
         self.save()
         ip = self.lineEdit_placeholder.text()
         ip = ip.replace('http://', '')
         ip = ip.replace('/', '')
         DevicesController.get_vim_api_class().set_ip(ip)
         video_capture = self.lineEdit_placeholder.text() + self.lineEdit_stream.text()
-        GlobalController.set_video_capture_source(video_capture)
+        GlobalController.set_video_capture_source_vim(video_capture)
+
+    def update_video_capture_info_laser(self):
+        self.save()
+        ip = self.lineEdit_placeholder.text()
+        ip = ip.replace('http://', '')
+        ip = ip.replace('/', '')
+        DevicesController.get_vim_api_class().set_ip(ip)
+        video_capture = self.lineEdit_placeholder.text() + self.lineEdit_stream.text()
+        GlobalController.set_video_capture_source_laser(video_capture)
 
     def connect_ip(self):
         try:

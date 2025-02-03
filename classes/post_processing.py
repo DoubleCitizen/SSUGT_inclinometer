@@ -49,7 +49,7 @@ def start_processing(file_path, signal_progressbar, signal_time_label):
         points = None
         try:
             image = frame
-            points, image, center_bubbles_px = segmentation.new_frame_processing(image)
+            points, image, center_bubbles_px = segmentation.vim_frame_processing(image)
             points, image, center_bubbles_px = CoordinateSystemOffset.get_new_image_coords(points, image,
                                                                                            center_bubbles_px)
         except Exception as e:

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="resource">
+    <file>resource/esp32_esp32.png</file>
     <file>resource/check.png</file>
     <file>resource/close.png</file>
     <file>resource/esp32.png</file>

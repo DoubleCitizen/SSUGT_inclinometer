@@ -5,8 +5,9 @@ import cv2
 
 
 class VideoSaver:
-    def __init__(self):
+    def __init__(self, name):
         self._out = None
+        self._name = name
         self._is_recording = False
         self.width = 0
         self.height = 0
@@ -14,6 +15,7 @@ class VideoSaver:
 
     def get_out(self):
         return self._out
+
     def get_record_status(self):
         return self._is_recording
 
@@ -36,7 +38,7 @@ class VideoSaver:
         current_directory = os.getcwd()
         self.create_directory(current_directory.replace('\\', '/') + '/data')
 
-        filename = current_directory + "/data/" + formatted_time + ".avi"
+        filename = current_directory + f"/data/{self._name}-" + formatted_time + ".avi"
 
         # fourcc = cv2.VideoWriter_fourcc(*'avc1')
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')

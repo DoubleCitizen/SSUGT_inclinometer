@@ -43,6 +43,29 @@
      </widget>
     </item>
     <item>
+     <widget class="QPushButton" name="pushButton_laser_and_vim">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Перейти в ВИМ + Laser менеджер</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resource.qrc">
+        <normaloff>:/resource/resource/esp32_esp32.png</normaloff>:/resource/resource/esp32_esp32.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>100</width>
+        <height>100</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="pushButton_post_processing">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -75,6 +98,12 @@
       </property>
       <property name="text">
        <string>Инструменты разработчиков</string>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>100</width>
+        <height>100</height>
+       </size>
       </property>
      </widget>
     </item>

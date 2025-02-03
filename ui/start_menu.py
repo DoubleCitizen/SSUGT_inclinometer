@@ -45,13 +45,24 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.pushButton_vim)
 
+        self.pushButton_laser_and_vim = QPushButton(self.centralwidget)
+        self.pushButton_laser_and_vim.setObjectName(u"pushButton_laser_and_vim")
+        sizePolicy.setHeightForWidth(self.pushButton_laser_and_vim.sizePolicy().hasHeightForWidth())
+        self.pushButton_laser_and_vim.setSizePolicy(sizePolicy)
+        icon2 = QIcon()
+        icon2.addFile(u":/resource/resource/esp32_esp32.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_laser_and_vim.setIcon(icon2)
+        self.pushButton_laser_and_vim.setIconSize(QSize(100, 100))
+
+        self.verticalLayout.addWidget(self.pushButton_laser_and_vim)
+
         self.pushButton_post_processing = QPushButton(self.centralwidget)
         self.pushButton_post_processing.setObjectName(u"pushButton_post_processing")
         sizePolicy.setHeightForWidth(self.pushButton_post_processing.sizePolicy().hasHeightForWidth())
         self.pushButton_post_processing.setSizePolicy(sizePolicy)
-        icon2 = QIcon()
-        icon2.addFile(u":/resource/resource/post_processing.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.pushButton_post_processing.setIcon(icon2)
+        icon3 = QIcon()
+        icon3.addFile(u":/resource/resource/post_processing.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_post_processing.setIcon(icon3)
         self.pushButton_post_processing.setIconSize(QSize(100, 100))
 
         self.verticalLayout.addWidget(self.pushButton_post_processing)
@@ -60,6 +71,7 @@ class Ui_MainWindow(object):
         self.pushButton_develop_tool.setObjectName(u"pushButton_develop_tool")
         sizePolicy.setHeightForWidth(self.pushButton_develop_tool.sizePolicy().hasHeightForWidth())
         self.pushButton_develop_tool.setSizePolicy(sizePolicy)
+        self.pushButton_develop_tool.setIconSize(QSize(100, 100))
 
         self.verticalLayout.addWidget(self.pushButton_develop_tool)
 
@@ -80,6 +92,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0413\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e \u0412\u0418\u041c", None))
         self.pushButton_vim.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0412\u0418\u041c \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440", None))
+        self.pushButton_laser_and_vim.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0412\u0418\u041c + Laser \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440", None))
         self.pushButton_post_processing.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u043f\u043e\u0441\u0442 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0443 \u0412\u0418\u041c", None))
         self.pushButton_develop_tool.setText(QCoreApplication.translate("MainWindow", u"\u0418\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u044b \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u043e\u0432", None))
     # retranslateUi

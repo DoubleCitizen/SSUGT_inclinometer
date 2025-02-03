@@ -6,7 +6,8 @@ class SpeedFrame:
 class ProcessVIM:
     PROCESS_ID = 'process_id'
     API_CONTROLLER_DATA = 'APIController_data'
-    DATA_FRAME = 'pfcbf'
+    DATA_FRAME_VIM = 'DATA_FRAME_VIM'
+    DATA_FRAME_LASER = 'DATA_FRAME_LASER'
     VIDEO_IS_OVER = 'VIDEO_IS_OVER'
     KILL_PROCESS = 'kill_process'
     IS_SEGMENTATION_SHOW = 'IS_SEGMENTATION_SHOW'
@@ -14,3 +15,7 @@ class ProcessVIM:
     IS_DRAW_POINTS = 'IS_DRAW_POINTS'
     COUNT_DRAW_POINTS = 'COUNT_DRAW_POINTS'
     DRAW_OPTIONS = 'DRAW_OPTIONS'
+
+class TypeDevices:
+    ESP32_VIM = 'ESP32_VIM'
+    ESP32_LASER = 'ESP32_LASER'

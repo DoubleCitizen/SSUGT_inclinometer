@@ -10,19 +10,20 @@ class GlobalController:
     _label_vim_temperature: None | QLabel = None
     _spinBox_points: None | QSpinBox = None
     _video_capture_source = None
-    _lineEdit_source_video = None
+    _lineEdit_source_video_vim = None
+    _lineEdit_source_video_laser = None
     _label_status_esp_connect: QLabel | None = None
     _status_esp_icon: QLabel | None = None
     _label_fps_counter: QLabel | None = None
-    _pushButton_apply_source: QPushButton | None = None
+    _pushButton_start_stream: QPushButton | None = None
 
     @classmethod
-    def get_push_button_apply_source(cls) -> QPushButton:
-        return cls._pushButton_apply_source
+    def get_push_button_start_stream(cls) -> QPushButton:
+        return cls._pushButton_start_stream
 
     @classmethod
-    def set_push_button_apply_source(cls, pushButton_apply_source: QPushButton):
-        cls._pushButton_apply_source = pushButton_apply_source
+    def set_push_button_start_stream(cls, pushButton_start_stream: QPushButton):
+        cls._pushButton_start_stream = pushButton_start_stream
 
     @classmethod
     def set_label_fps_counter(cls, label_fps_counter: QLabel):
@@ -57,13 +58,22 @@ class GlobalController:
         return cls._label_vim_temperature
 
     @classmethod
-    def set_lineEdit_source_video(cls, value):
-        cls._lineEdit_source_video = value
+    def set_lineEdit_source_video_vim(cls, value):
+        cls._lineEdit_source_video_vim = value
 
     @classmethod
-    def set_video_capture_source(cls, value):
+    def set_lineEdit_source_video_laser(cls, value):
+        cls._lineEdit_source_video_laser = value
+
+    @classmethod
+    def set_video_capture_source_vim(cls, value):
         cls._video_capture_source = value
-        cls._lineEdit_source_video.setText(value)
+        cls._lineEdit_source_video_vim.setText(value)
+
+    @classmethod
+    def set_video_capture_source_laser(cls, value):
+        cls._video_capture_source = value
+        cls._lineEdit_source_video_laser.setText(value)
 
     @classmethod
     def get_video_capture_source(cls):

@@ -64,9 +64,9 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         GlobalController.set_checkBox_enable_record(self.checkBox_enable_record)
         GlobalController.set_checkBox_rectangle_show(self.checkBox_rectangle_show)
         GlobalController.set_spinBox_points(self.spinBox_points)
-        GlobalController.set_lineEdit_source_video(self.lineEdit_source_video)
+        GlobalController.set_lineEdit_source_video_vim(self.lineEdit_source_video)
         GlobalController.set_checkBox_start_position(self.checkBox_start_position)
-        GlobalController.set_push_button_apply_source(self.pushButton_apply_source)
+        GlobalController.set_push_button_start_stream(self.pushButton_apply_source)
         ShootingSpeed.set_line_edit_speed_frame(self.lineEdit_speed_frame)
         ShootingSpeed.set_combobox_speed_frame(self.comboBox_speed_frame)
 
@@ -124,7 +124,7 @@ class Ui_MainWindowController(QMainWindow, main.Ui_MainWindow, QObject):
         self.stop_stream()
 
     def start_stream(self, cap):
-        self.segmentation = StreamController(cap, self.graphicsView, self.label_value,
+        self.segmentation = StreamController(cap, None, self.label_value,
                                              self.signal_send_frame_graphics_view)
         self.segmentation.start_stream()
 

@@ -1,5 +1,6 @@
 # import requests
 import logging
+import multiprocessing
 import os
 import signal
 import sys
@@ -36,6 +37,7 @@ def kill_process():
 
 if __name__ == "__main__":
     # Указываем имя папки
+    multiprocessing.freeze_support()
     folder_name = 'logs'
 
     # Проверяем, существует ли папка

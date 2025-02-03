@@ -70,7 +70,63 @@ class SegmentationBase:
 
         return [], thresh, 0
 
-    def new_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
+    def laser_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
+                               is_draw_rectangle: bool = False,
+                               is_draw_points: bool = False):
+        frame_result = frame_original.copy()
+        # Извлечение R канала (индекс 2 в BGR)
+        red_channel = frame_result[:, :, 2]
+
+        frame_result = red_channel
+        frame_result = cv2.medianBlur(frame_result, 5)
+        ret_th, thresh = cv2.threshold(frame_result, 0, 255, cv2.THRESH_OTSU)
+
+        # Определение структурного элемента (ядра)
+        kernel = np.ones((11, 11), np.uint8)  # 5x5 квадратное ядро
+
+        thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+        # Найти контуры
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Получаем размеры изображения
+        height, width = frame_result.shape
+
+        # Вычисляем центр изображения
+        center_x, center_y = width // 2, height // 2
+
+        # Переменные для хранения самого большого контура и его площади
+        largest_contour = None
+        min_distance = float('inf')
+        min_contour_center_x = 0
+        min_contour_center_y = 0
+
+        closest_contour_to_center = None
+
+        # Фильтруем контуры
+        for contour in contours:
+            M = cv2.moments(contour)
+            if M["m00"] != 0:  # Избегаем деления на ноль
+                contour_center_x = int(M["m10"] / M["m00"])
+                contour_center_y = int(M["m01"] / M["m00"])
+
+                # Вычисляем расстояние от центра изображения до центра контура
+                distance = np.sqrt((contour_center_x - center_x) ** 2 + (contour_center_y - center_y) ** 2)
+
+                # Условие для проверки, что контур близок к центру (например, меньше 100 пикселей)
+                if distance < min_distance:  # Можете изменить этот порог по своему усмотрению
+                    min_distance = distance
+                    filtered_contours = [contour]
+                    min_contour_center_x = contour_center_x
+                    min_contour_center_y = contour_center_y
+
+        # Рисуем отфильтрованные контуры на исходном изображении
+        output_image = frame_original
+        # thresh = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+        cv2.drawContours(output_image, filtered_contours, -1, (0, 255, 0), 2)
+
+        return output_image, min_contour_center_x, min_contour_center_y
+
+    def vim_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
                              is_draw_rectangle: bool = False,
                              is_draw_points: bool = False, count_draw_points: int = 1):
         frame_result = frame_original.copy()
@@ -100,22 +156,16 @@ class SegmentationBase:
         x, y, w, h = self.crop_x, self.crop_y, self.crop_w, self.crop_h
         cropped = frame[y:y + h, x:x + w]
         mask = thresh[y:y + h, x:x + w]
-        # mask = cv2.bitwise_not(mask)
         cropped[mask == 0] = 255
 
-        # frame_copy = frame.copy()
-
-        # cv2.imshow("frame", frame)
         # Применить медианный фильтр с ядром размером 3x3
         cropped = cv2.medianBlur(cropped, 5)
 
         ret_th, thresh = cv2.threshold(cropped, 0, 255, cv2.THRESH_OTSU)
-        # cv2.imshow("thresh", thresh)
 
         # Найти контуры
         cnts = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-        # thresh = cv2.medianBlur(thresh, 5)
 
         # Найти самый большой контур (прямоугольник)
         area_list = []
@@ -146,7 +196,6 @@ class SegmentationBase:
                 temp_sorted_list.append(sorted_area_list[i])
         sorted_area_list = temp_sorted_list
 
-        # print(len(sorted_area_list))
         try:
             x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
             if len(sorted_area_list) < 3:
@@ -162,7 +211,6 @@ class SegmentationBase:
         # Создание графика с точками
         # Транспонирование массива
         cv2.drawContours(cropped, sorted_area_list[-1][1], -1, (0, 255, 0), 2)
-        # cv2.imshow("cropped", cropped)
         xy_array = sorted_area_list[-1][1]
 
         transposed_array = np.transpose(xy_array)
@@ -349,4 +397,4 @@ if __name__ == "__main__":
 
     ret, frame = vid.read()
 
-    segm.new_frame_processing(frame)
+    segm.vim_frame_processing(frame)
