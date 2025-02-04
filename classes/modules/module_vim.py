@@ -203,7 +203,7 @@ class ModuleESP32:
                     self._points, self._center_bubbles_px, self._frame, self._frame_original, self._fps, self._is_camera = value
                     self.module_parent_sync_conn.send('Done')
                 case ProcessVIM.DATA_FRAME_LASER:
-                    self._frame, self._frame_original, self._fps, self._is_camera, self._x, self._y = value
+                    self._frame, self._frame_original, self._fps, self._is_camera, self._x, self._y, self._points = value
                     self.module_parent_sync_conn.send('Done')
                 case ProcessVIM.VIDEO_IS_OVER:
                     self.stop_stream()
@@ -244,8 +244,8 @@ class ModuleESP32:
                     conn.send(
                         ((points, center_bubbles_px, frame, frame_original, fps, is_camera), ProcessVIM.DATA_FRAME_VIM))
                 elif type_device == TypeDevices.ESP32_LASER:
-                    frame, x, y = segmentation.laser_frame_processing(frame_original.copy())
-                    conn.send(((frame, frame_original, fps, is_camera, x, y), ProcessVIM.DATA_FRAME_LASER))
+                    frame, x, y, points_contour = segmentation.laser_frame_processing(frame_original.copy())
+                    conn.send(((frame, frame_original, fps, is_camera, x, y, points_contour), ProcessVIM.DATA_FRAME_LASER))
 
                 sync_data = None
 

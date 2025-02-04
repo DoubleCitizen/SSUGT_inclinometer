@@ -11,8 +11,6 @@ def get_new_points(points: np.ndarray, sep: str = ';'):
                     results_points_text_x += str(point) + ','
                 case 1:
                     results_points_text_y += str(point) + ','
-        # results_points_text_x = results_points_text_x[:len(results_points_text_x) - 2] + sep
-        # results_points_text_y = results_points_text_y[:len(results_points_text_y) - 2] + sep
     results_points_text_x = results_points_text_x.rstrip(',')
     results_points_text_y = results_points_text_y.rstrip(',')
     return results_points_text_x, results_points_text_y

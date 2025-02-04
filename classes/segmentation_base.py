@@ -121,10 +121,12 @@ class SegmentationBase:
 
         # Рисуем отфильтрованные контуры на исходном изображении
         output_image = frame_original
+        # Удаляем ось длины 1
+        points_contour = np.squeeze(filtered_contours[0], axis=1)
         # thresh = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
         cv2.drawContours(output_image, filtered_contours, -1, (0, 255, 0), 2)
 
-        return output_image, min_contour_center_x, min_contour_center_y
+        return output_image, min_contour_center_x, min_contour_center_y, points_contour
 
     def vim_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
                              is_draw_rectangle: bool = False,

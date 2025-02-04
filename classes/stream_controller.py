@@ -33,7 +33,8 @@ from widgets.qgraphicsviewplot import QGraphicsViewPlot
 
 class StreamController(QObject):
 
-    def __init__(self, cap, cap_laser, label_value, signal_send_frame_graphics_view_vim, signal_send_frame_graphics_view_laser=None):
+    def __init__(self, cap, cap_laser, label_value, signal_send_frame_graphics_view_vim,
+                 signal_send_frame_graphics_view_laser=None):
         super().__init__()
         self.cap = cap
         self._cap_laser = cap_laser
@@ -48,7 +49,8 @@ class StreamController(QObject):
         self.file_saver = FileSaver()
         self.file_saver.initialize(
             headers=['time', 'center_bubbles_px', 'nivel_x', 'nivel_y', 'nivel_t', 'temperature',
-                     'watch_indicator', 'laser_x', 'laser_y', 'points_x', 'points_y'],
+                     'watch_indicator', 'laser_x', 'laser_y', 'laser_points_x', 'laser_points_y', 'vim_points_x',
+                     'vim_points_y'],
             sep=';')
         self.signal_send_frame_graphics_view_vim = signal_send_frame_graphics_view_vim
         self.signal_send_frame_graphics_view_laser = signal_send_frame_graphics_view_laser
@@ -88,7 +90,6 @@ class StreamController(QObject):
             self.module_esp32_laser.set_source(self._cap_laser)
             self.module_esp32_laser.start_stream()
 
-
         temperature = 0
 
         while self.video_is_started:
@@ -116,9 +117,10 @@ class StreamController(QObject):
                 self.module_esp32_vim.center_bubbles_px,
                 self.module_esp32_vim.points, self.module_esp32_vim.is_camera)
             if self._cap_laser is not None:
-                frame_laser, frame_original_laser, fps_laser, is_camera_laser, x_laser, y_laser = (
-                self.module_esp32_laser.frame, self.module_esp32_laser.frame_original, self.module_esp32_laser.fps,
-                self.module_esp32_laser.is_camera, self.module_esp32_laser.x, self.module_esp32_laser.y)
+                frame_laser, frame_original_laser, fps_laser, is_camera_laser, x_laser, y_laser, points_laser = (
+                    self.module_esp32_laser.frame, self.module_esp32_laser.frame_original, self.module_esp32_laser.fps,
+                    self.module_esp32_laser.is_camera, self.module_esp32_laser.x, self.module_esp32_laser.y,
+                    self.module_esp32_laser.points)
 
             if self.module_esp32_vim.frame is None or self.module_esp32_vim.frame_original is None:
                 continue
@@ -181,13 +183,15 @@ class StreamController(QObject):
                 current_time = datetime.now()
                 formatted_time = current_time.strftime("%H:%M:%S.%f")
                 indicator = GlobalVariables.get_indicator_value()
-                points_x, points_y = get_new_points(points_vim)
+                vim_points_x, vim_points_y = get_new_points(points_vim)
+                laser_points_x, laser_points_y = get_new_points(points_laser)
                 self.file_saver.write_data(
                     [formatted_time, center_vim_bubbles_px, NivelTool.current_x, NivelTool.current_y,
                      NivelTool.current_t,
-                     str(temperature), str(indicator), x_laser, y_laser, points_x, points_y])
+                     str(temperature), str(indicator), x_laser, y_laser, laser_points_x, laser_points_y, vim_points_x,
+                     vim_points_y])
                 logging.info(
-                    f"Проведена запись в файл:\n{[formatted_time, center_vim_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(temperature), str(indicator), points_x, points_y]}")
+                    f"Проведена запись в файл:\n{[formatted_time, center_vim_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(temperature), str(indicator), laser_points_x, laser_points_y, vim_points_x, vim_points_y]}")
             else:
                 self.video_saver_vim.release()
                 self.video_saver_laser.release()
