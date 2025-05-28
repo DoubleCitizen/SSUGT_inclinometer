@@ -91,6 +91,8 @@ class StreamController(QObject):
             self.module_esp32_laser.start_stream()
 
         temperature = 0
+        frame_laser, frame_original_laser, fps_laser, is_camera_laser, x_laser, y_laser, points_laser = None, None, None, None, None, None, None
+        laser_points_x, laser_points_y = None, None
 
         while self.video_is_started:
             ShootingSpeed.enable_sanctions()
@@ -184,7 +186,8 @@ class StreamController(QObject):
                 formatted_time = current_time.strftime("%H:%M:%S.%f")
                 indicator = GlobalVariables.get_indicator_value()
                 vim_points_x, vim_points_y = get_new_points(points_vim)
-                laser_points_x, laser_points_y = get_new_points(points_laser)
+                if points_laser is not None:
+                    laser_points_x, laser_points_y = get_new_points(points_laser)
                 self.file_saver.write_data(
                     [formatted_time, center_vim_bubbles_px, NivelTool.current_x, NivelTool.current_y,
                      NivelTool.current_t,
