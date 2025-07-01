@@ -207,7 +207,7 @@ class SegmentationBase:
             try:
                 x, y, w, h = cv2.boundingRect(sorted_area_list[-1][1])
             except IndexError:
-                print(IndexError)
+                # print(IndexError)
                 return [], frame_original, 0
         cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
         # Создание графика с точками
