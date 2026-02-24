@@ -42,7 +42,7 @@ Ensure you have Python 3.8+ installed on your system.
 
 1. **Clone the repository** (or download the source code):
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/DoubleCitizen/SSUGT_inclinometer
    cd SSUGT_inclinometer
    ```
 
