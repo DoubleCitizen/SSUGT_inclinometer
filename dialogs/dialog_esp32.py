@@ -21,16 +21,20 @@ from classes.config_controller import ConfigController
 
 
 class ChangeNameMenu(QMenu):
+    """Context menu for renaming EPS32 module aliases."""
     def __init__(self, parent=None, name=""):
+        """Initializes the change name popup menu."""
         super().__init__(parent)
         self._is_change_name = False
         self._text = name
         self.initUI()
 
     def _set_change_name(self, state):
+        """Sets internal flag confirming name change."""
         self._is_change_name = state
 
     def initUI(self):
+        """Maps default interactive elements into rendering engine layouts."""
         self.textbox = QLineEdit(self._text)
         self.textbox_action = QWidgetAction(self)
         self.textbox_action.setDefaultWidget(self.textbox)
@@ -45,17 +49,21 @@ class ChangeNameMenu(QMenu):
         self.addAction(self.cancel_action)
 
     def exec(self, event):
+        """Executes the menu modal waiting for input loop results."""
         super().exec_(event)
         if self._is_change_name:
             return self.textbox.text()
 
 
 class EspListWidget(QListWidget):
+    """Network discovered module list interaction panel."""
     def __init__(self, refresh_ip):
+        """Initializes the list widget with hook to refresh action."""
         super().__init__()
         self.refresh_ip = refresh_ip
 
     def contextMenuEvent(self, event):
+        """Spawns right-click context interactive menu entries."""
         menu = QMenu()
         action1 = QAction("Подключить vim", self)
         action2 = QAction("Подключить laser", self)
@@ -76,12 +84,15 @@ class EspListWidget(QListWidget):
 
 
 class Esp32Dialog(QDialog):
+    """Dialog querying ESP32 device network scan, connection, and RGB color testing."""
     def __init__(self):
+        """Spawns connection dialog structure bounds."""
         super().__init__()
 
         self.initUI()
 
     def initUI(self):
+        """Maps default interactive elements into rendering engine layouts."""
         layout = QGridLayout()
         self.setWindowTitle("Подключение ESP32")
 
@@ -132,6 +143,7 @@ class Esp32Dialog(QDialog):
         self.load()
 
     def combobox_index_changed(self):
+        """Handles route swapping between frame and stream based connection requests."""
         match self.comboBox.currentIndex():
             case 0:
                 self.lineEdit_stream.setText("/get_image")
@@ -140,6 +152,7 @@ class Esp32Dialog(QDialog):
         self.update_video_capture_info_vim()
 
     def openColorDialog(self):
+        """Spawns color picker palette testing module LED strip states."""
         color = self.color_dialog.getColor()
         rgb = color.getRgb()[:-1]
         DevicesController.get_vim_api_class().set_color_rgb(rgb)
@@ -148,6 +161,7 @@ class Esp32Dialog(QDialog):
 
     @staticmethod
     def get_all_texts(list_widget):
+        """Extracts text sequences spanning across all active list widget items."""
         texts = []
         for i in range(list_widget.count()):
             item = list_widget.item(i)
@@ -156,12 +170,14 @@ class Esp32Dialog(QDialog):
 
     @staticmethod
     def create_directory(folder_path):
+        """Asserts hierarchy conditions applying overrides when absent."""
         if os.path.exists(folder_path) and os.path.isdir(folder_path):
             return
         else:
             os.makedirs(folder_path)
 
     def load(self):
+        """Hydrates interface states parsing previously cached json properties."""
         self.create_directory('data')
         try:
             json_data = ConfigController("data/dialog_esp32.json").load()
@@ -172,6 +188,7 @@ class Esp32Dialog(QDialog):
             pass
 
     def save(self):
+        """Serializes current UI properties out to json cache config."""
         self.create_directory('data')
         config_controller = ConfigController("data/dialog_esp32.json")
         json_data = config_controller.load()
@@ -190,6 +207,7 @@ class Esp32Dialog(QDialog):
         # self.color_dialog.setCo
 
     def update_video_capture_info_vim(self):
+        """Modifies central data references applying selected IP configurations to VIM."""
         self.save()
         ip = self.lineEdit_placeholder.text()
         ip = ip.replace('http://', '')
@@ -199,6 +217,7 @@ class Esp32Dialog(QDialog):
         GlobalController.set_video_capture_source_vim(video_capture)
 
     def update_video_capture_info_laser(self):
+        """Modifies central data references applying selected IP configurations to Laser."""
         self.save()
         ip = self.lineEdit_placeholder.text()
         ip = ip.replace('http://', '')
@@ -208,6 +227,7 @@ class Esp32Dialog(QDialog):
         GlobalController.set_video_capture_source_laser(video_capture)
 
     def connect_ip(self):
+        """Dispatches connection verification and synchronizes color LED feedback signals."""
         try:
             network_info = self.list_widget_ip_addresses.currentItem().text().split('\t')[0]
         except:
@@ -235,6 +255,7 @@ class Esp32Dialog(QDialog):
         self.save()
 
     def scan_network(self, network_range):
+        """Spawns concurrent scanning routines mapping ESP32 subnet boundaries."""
         q = queue.Queue()
         for ip in range(0, 256):
             ip = f"{network_range}.{ip}"
@@ -250,6 +271,7 @@ class Esp32Dialog(QDialog):
 
     @staticmethod
     def check_ip(ip, q):
+        """Probes targeted IP addresses tracking alive modules."""
         try:
             result = requests.get(f"http://{ip}/get_name")
             if result.status_code == 200:
@@ -259,6 +281,7 @@ class Esp32Dialog(QDialog):
 
     @staticmethod
     def get_local_ip():
+        """Extracts local network IP assigned to routing bounds."""
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))  # Google's public DNS
         local_ip = s.getsockname()
@@ -266,6 +289,7 @@ class Esp32Dialog(QDialog):
         return local_ip
 
     def get_list_network(self):
+        """Coordinates scan sweeps iterating possible endpoint routes."""
         # hostname = socket.gethostname()
         # local_ip = socket.gethostbyname(hostname)
         subnet = self.get_local_ip()[0].rsplit('.', 1)
@@ -273,6 +297,7 @@ class Esp32Dialog(QDialog):
         return clients
 
     def refresh_ip_info(self):
+        """Hydrates the active devices UI list querying endpoint responses."""
         self.list_widget_ip_addresses.clear()
         clients = self.get_list_network()
         clients = [_ for _ in clients if _ is not None]

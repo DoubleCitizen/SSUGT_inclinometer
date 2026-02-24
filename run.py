@@ -20,39 +20,43 @@ os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = QLibraryInfo.location(
 
 
 def kill_process():
-    """Завершает процесс с заданным PID.
+    """Terminates the current process.
 
-    Args:
-        pid: ID процесса, который нужно завершить.
+    Gets the current process ID and sends a SIGTERM signal to terminate it.
     """
     pid = os.getpid()
     try:
-        os.kill(pid, signal.SIGTERM)  # Отправляет сигнал SIGTERM
-        print(f"Процесс с PID {pid} завершен.")
+        os.kill(pid, signal.SIGTERM)  # Sends SIGTERM signal
+        print(f"Process with PID {pid} terminated.")
     except ProcessLookupError:
-        print(f"Процесс с PID {pid} не найден.")
+        print(f"Process with PID {pid} not found.")
     except PermissionError:
-        print(f"Нет прав для завершения процесса с PID {pid}.")
+        print(f"No permissions to terminate process with PID {pid}.")
 
 
 if __name__ == "__main__":
-    # Указываем имя папки
+    """Main execution block to start the application.
+    
+    Sets up multiprocessing freeze support, logging to a file in the 'logs' folder,
+    and initializes the PySide6 application window.
+    """
+    # Specify the folder name
     multiprocessing.freeze_support()
     folder_name = 'logs'
 
-    # Проверяем, существует ли папка
+    # Check if the folder exists
     if not os.path.exists(folder_name):
-        os.makedirs(folder_name)  # Создаем папку, если она не существует
-        print(f"Папка '{folder_name}' была создана.")
+        os.makedirs(folder_name)  # Create folder if it does not exist
+        print(f"Folder '{folder_name}' has been created.")
     else:
-        print(f"Папка '{folder_name}' уже существует.")
-    # Получаем текущую дату и время в формате YYYY-MM-DD_HH-MM-SS
+        print(f"Folder '{folder_name}' already exists.")
+    # Get current date and time in YYYY-MM-DD_HH-MM-SS format
     current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     logging.basicConfig(level=logging.INFO, filename=f"logs/py_log_{current_datetime}.log", filemode="w",
                         format="%(asctime)s %(levelname)s %(message)s")
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
-    MainWindow = Ui_MainWindow()  # Используйте ваш класс здесь
+    MainWindow = Ui_MainWindow()  # Use your class here
     MainWindow.setupUi(MainWindow)
     MainWindow.show()
     app.exec()

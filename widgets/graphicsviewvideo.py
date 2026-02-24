@@ -7,7 +7,19 @@ from PySide6.QtWidgets import QSizePolicy, QGraphicsPolygonItem
 
 
 class QGraphicsViewVideo(QtWidgets.QGraphicsView):
+    """Custom QGraphicsView for displaying OpenCV video frames.
+    
+    Attributes:
+        qImg (QImage | None): The current image being displayed.
+        scene (QGraphicsScene): The graphics scene.
+        polygon_points (list): List of points for drawing polygons.
+    """
     def __init__(self, parent=None):
+        """Initializes the video viewing widget.
+        
+        Args:
+            parent (QWidget, optional): Parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.qImg = None
         self.scene = QtWidgets.QGraphicsScene()
@@ -16,7 +28,7 @@ class QGraphicsViewVideo(QtWidgets.QGraphicsView):
 
     @QtCore.Slot(np.ndarray)
     def image_cv(self, frame):
-        """ Применение изображения из матрицы OpenCV """
+        """ Applies image from OpenCV matrix """
         height, width = frame.shape[:2]
 
         # print(height, width)
@@ -37,6 +49,7 @@ class QGraphicsViewVideo(QtWidgets.QGraphicsView):
         self.fitInView(self.pixmapItem, QtCore.Qt.KeepAspectRatio)
 
     def update_image(self):
+        """Updates the image view, recalculating scene items and view fitting."""
         self.scene.clear()
         if self.qImg is not None:
             self.pixmap = QPixmap.fromImage(self.qImg)

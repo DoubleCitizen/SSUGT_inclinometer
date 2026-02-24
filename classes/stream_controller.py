@@ -32,14 +32,31 @@ from widgets.qgraphicsviewplot import QGraphicsViewPlot
 
 
 class StreamController(QObject):
+    """Controls the video stream and interaction with connected devices.
+    
+    Attributes:
+        cap: The primary video capture source.
+        _cap_laser: The secondary laser video capture source.
+        label_value (QLabel): Label to display measurement values.
+        video_is_started (bool): Flag indicating if the video stream is active.
+    """
 
     def __init__(self, cap, cap_laser, label_value, signal_send_frame_graphics_view_vim,
                  signal_send_frame_graphics_view_laser=None):
+        """Initializes the StreamController.
+        
+        Args:
+            cap: Video capture object for VIM.
+            cap_laser: Video capture object for Laser.
+            label_value (QLabel): UI label for displaying the measured value.
+            signal_send_frame_graphics_view_vim: Signal to emit VIM frames.
+            signal_send_frame_graphics_view_laser: Signal to emit Laser frames.
+        """
         super().__init__()
         self.cap = cap
         self._cap_laser = cap_laser
         self.label_value: QLabel = label_value
-        # Получить общие кадры и FPS
+        # Get total frames and FPS
         # self.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         # self.fps = cap.get(cv2.CAP_PROP_FPS)
         self.video_is_started = False
@@ -58,29 +75,41 @@ class StreamController(QObject):
         self.module_esp32_laser = ModuleESP32(type_device=TypeDevices.ESP32_LASER)
 
     def stop_stream(self):
+        """Stops the active video stream."""
         self.video_is_started = False
         ShootingSpeed.disable_sanctions()
 
     def connection_is_missing(self, esp32_name):
-        logging.info(f"Разорвано соединение с ВИМ: {esp32_name}")
-        text_status = f"Разорвано соединение с ВИМ: {esp32_name}"
+        """Handles missing connection to the VIM module.
+        
+        Args:
+            esp32_name (str): Name of the ESP32 module.
+        """
+        logging.info(f"Connection lost with VIM: {esp32_name}")
+        text_status = f"Connection lost with VIM: {esp32_name}"
         icon = QIcon(u":/resource/resource/close.png")
-        pixmap = icon.pixmap(16, 16)  # Установите размер иконки
+        pixmap = icon.pixmap(16, 16)  # Set icon size
         GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
         GlobalController.get_status_esp_icon().setText("")
         GlobalController.get_status_esp_icon().setPixmap(pixmap)
 
     def connection_is_good(self, esp32_name):
-        logging.info(f"Успешное соединение с ВИМ: {esp32_name}")
-        text_status = f"Успешное соединение с ВИМ: {esp32_name}"
+        """Handles successful connection to the VIM module.
+        
+        Args:
+            esp32_name (str): Name of the ESP32 module.
+        """
+        logging.info(f"Successful connection with VIM: {esp32_name}")
+        text_status = f"Successful connection with VIM: {esp32_name}"
         icon = QIcon(u":/resource/resource/check.png")
-        pixmap = icon.pixmap(16, 16)  # Установите размер иконки
+        pixmap = icon.pixmap(16, 16)  # Set icon size
         GlobalController.get_label_status_esp_connect().setText(f"{text_status}")
         GlobalController.get_status_esp_icon().setText("")
         GlobalController.get_status_esp_icon().setPixmap(pixmap)
 
     def start_stream(self):
-        logging.info("Запущен стрим видеопотока")
+        """Starts the main video stream reading loop and processes frames."""
+        logging.info("Video stream started")
         self.video_is_started = True
         esp32_vim_name = ''
         # APIController.check_is_video_capture(self.cap)
@@ -155,11 +184,11 @@ class StreamController(QObject):
                 value_a = data_json.get('a', 0)
                 value_b = data_json.get('b', 0)
                 units = data_json.get('units', "''")
-                self.label_value.setText(f"ВИМ: {(center_vim_bubbles_px * value_a) + value_b}{units}")
+                self.label_value.setText(f"VIM: {(center_vim_bubbles_px * value_a) + value_b}{units}")
             except:
-                self.label_value.setText(f"ВИМ: {center_vim_bubbles_px}пикс.")
-            logging.info("Определение пузырька успешное")
-            # self.label_status.setText("Пузырек не удалось обнаружить")
+                self.label_value.setText(f"VIM: {center_vim_bubbles_px}px.")
+            logging.info("Bubble detection successful")
+            # self.label_status.setText("Bubble could not be detected")
 
             if self.video_saver_vim.get_out() is None and GlobalController.is_recording() and self.video_saver_vim.get_record_status() is False:
                 self.video_saver_vim.initialize(
@@ -194,7 +223,7 @@ class StreamController(QObject):
                      str(temperature), str(indicator), x_laser, y_laser, laser_points_x, laser_points_y, vim_points_x,
                      vim_points_y])
                 logging.info(
-                    f"Проведена запись в файл:\n{[formatted_time, center_vim_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(temperature), str(indicator), laser_points_x, laser_points_y, vim_points_x, vim_points_y]}")
+                    f"Recorded to file:\n{[formatted_time, center_vim_bubbles_px, NivelTool.current_x, NivelTool.current_y, NivelTool.current_t, str(temperature), str(indicator), laser_points_x, laser_points_y, vim_points_x, vim_points_y]}")
             else:
                 self.video_saver_vim.release()
                 self.video_saver_laser.release()
@@ -206,7 +235,7 @@ class StreamController(QObject):
             # except Exception as e:
             #     print(e)
         self.module_esp32_vim.stop_stream()
-        logging.info(f"Стрим был остановлен")
+        logging.info(f"Stream was stopped")
         if DevicesController.get_vim_api_class().get_is_video_capture():
             DevicesController.get_vim_api_class().get_cap().release()
         self.connection_is_missing(esp32_vim_name)

@@ -4,7 +4,17 @@ import logging
 
 
 class SegmentationBase:
+    """Base class for image segmentation operations.
+    
+    Attributes:
+        crop_x (int): X coordinate for cropping.
+        crop_y (int): Y coordinate for cropping.
+        crop_w (int): Width of the cropped area.
+        crop_h (int): Height of the cropped area.
+        area_crop (int | None): Area of the bounding rectangle.
+    """
     def __init__(self):
+        """Initializes the SegmentationBase attributes."""
         self.crop_x = 0
         self.crop_y = 0
         self.crop_w = 0
@@ -13,30 +23,46 @@ class SegmentationBase:
 
     @staticmethod
     def delete_polygons(image):
-        # Находим контуры на бинарном изображении
+        """Deletes all polygons from the binary image except the largest one.
+
+        Args:
+            image (np.ndarray): Binary image.
+
+        Returns:
+            tuple: The result image and the maximum contour found.
+        """
+        # Find contours in the binary image
         contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Инициализация переменных для хранения максимальной площади и соответствующего контура
+        # Initialize variables to store maximum area and corresponding contour
         max_area = 0
         max_contour = None
 
-        # Перебор контуров для нахождения самого большого
+        # Iterate through contours to find the largest one
         for contour in contours:
             area = cv2.contourArea(contour)
             if area > max_area:
                 max_area = area
                 max_contour = contour
 
-        # Создание копии исходного изображения для вывода результата
+        # Create a copy of the original image for the output result
         result = image.copy()
 
-        # Закрашивание всех контуров, кроме самого большого, в черный цвет
+        # Fill all contours except the largest one with black color
         for contour in contours:
             if contour is not max_contour:
                 cv2.drawContours(result, [contour], 0, 0, -1)
         return result, max_contour
 
     def get_xywh_crop_from_contour(self, max_contour):
+        """Calculates and updates the crop coordinates based on the given contour.
+
+        Args:
+            max_contour (np.ndarray): The maximum contour detected in the frame.
+
+        Returns:
+            tuple: A tuple containing the updated crop coordinates (x, y, w, h).
+        """
         if self.crop_x == 0:
             self.crop_x, self.crop_y, self.crop_w, self.crop_h = cv2.boundingRect(max_contour)
         if self.area_crop is None:
@@ -51,12 +77,26 @@ class SegmentationBase:
         return self.crop_x, self.crop_y, self.crop_w, self.crop_h
 
     def search_bubble(self, cropped_image, ret_th):
+        """Applies a threshold to search and display the bubble on crop.
+
+        Args:
+            cropped_image (np.ndarray): The cropped portion of the image.
+            ret_th: The threshold value returned from a previous operation.
+        """
         ret_th, thresh = cv2.threshold(cropped_image, 0, 255, cv2.THRESH_OTSU)
         # ret_th, thresh = cv2.threshold(cropped_image, ret_th, 255, cv2.THRESH_BINARY)
         cv2.imshow('thresh', thresh)
         cv2.waitKey(1)
 
     def v2_frame_proccesing(self, frame_original):
+        """Processes the frame for segmentation version 2.
+
+        Args:
+            frame_original (np.ndarray): The original frame.
+
+        Returns:
+            tuple: A tuple with coordinates, thresholded image, and center.
+        """
         frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
         frame = cv2.medianBlur(frame, 5)
@@ -65,7 +105,7 @@ class SegmentationBase:
         thresh, max_contour = self.delete_polygons(thresh)
         x, y, w, h = self.get_xywh_crop_from_contour(max_contour)
 
-        cropped_image = frame[y:y + h, x:x + w]  # обрезка изображения
+        cropped_image = frame[y:y + h, x:x + w]  # image crop
         self.search_bubble(cropped_image, ret_th)
 
         return [], thresh, 0
@@ -73,28 +113,39 @@ class SegmentationBase:
     def laser_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
                                is_draw_rectangle: bool = False,
                                is_draw_points: bool = False):
+        """Processes the frame for laser pointer detection.
+
+        Args:
+            frame_original (np.ndarray): Original image frame.
+            is_segmentaion_show (bool, optional): Displays segmentation elements. Defaults to False.
+            is_draw_rectangle (bool, optional): Draws rectangle around the contour. Defaults to False.
+            is_draw_points (bool, optional): Draws boundary points. Defaults to False.
+
+        Returns:
+            tuple: Output image with center coordinates and contour points.
+        """
         frame_result = frame_original.copy()
-        # Извлечение R канала (индекс 2 в BGR)
+        # Extract R channel (index 2 in BGR)
         red_channel = frame_result[:, :, 2]
 
         frame_result = red_channel
         frame_result = cv2.medianBlur(frame_result, 5)
         ret_th, thresh = cv2.threshold(frame_result, 0, 255, cv2.THRESH_OTSU)
 
-        # Определение структурного элемента (ядра)
-        kernel = np.ones((11, 11), np.uint8)  # 5x5 квадратное ядро
+        # Define structuring element (kernel)
+        kernel = np.ones((11, 11), np.uint8)  # 5x5 square kernel
 
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
-        # Найти контуры
+        # Find contours
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Получаем размеры изображения
+        # Get image dimensions
         height, width = frame_result.shape
 
-        # Вычисляем центр изображения
+        # Calculate image center
         center_x, center_y = width // 2, height // 2
 
-        # Переменные для хранения самого большого контура и его площади
+        # Variables to store largest contour and its area
         largest_contour = None
         min_distance = float('inf')
         min_contour_center_x = 0
@@ -102,26 +153,26 @@ class SegmentationBase:
 
         closest_contour_to_center = None
 
-        # Фильтруем контуры
+        # Filter contours
         for contour in contours:
             M = cv2.moments(contour)
-            if M["m00"] != 0:  # Избегаем деления на ноль
+            if M["m00"] != 0:  # Avoid division by zero
                 contour_center_x = int(M["m10"] / M["m00"])
                 contour_center_y = int(M["m01"] / M["m00"])
 
-                # Вычисляем расстояние от центра изображения до центра контура
+                # Calculate distance from image center to contour center
                 distance = np.sqrt((contour_center_x - center_x) ** 2 + (contour_center_y - center_y) ** 2)
 
-                # Условие для проверки, что контур близок к центру (например, меньше 100 пикселей)
-                if distance < min_distance:  # Можете изменить этот порог по своему усмотрению
+                # Condition to check if contour is close to the center
+                if distance < min_distance: 
                     min_distance = distance
                     filtered_contours = [contour]
                     min_contour_center_x = contour_center_x
                     min_contour_center_y = contour_center_y
 
-        # Рисуем отфильтрованные контуры на исходном изображении
+        # Draw filtered contours on the original image
         output_image = frame_original
-        # Удаляем ось длины 1
+        # Remove axis of length 1
         points_contour = np.squeeze(filtered_contours[0], axis=1)
         # thresh = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
         cv2.drawContours(output_image, filtered_contours, -1, (0, 255, 0), 2)
@@ -131,15 +182,27 @@ class SegmentationBase:
     def vim_frame_processing(self, frame_original: np.ndarray, is_segmentaion_show: bool = False,
                              is_draw_rectangle: bool = False,
                              is_draw_points: bool = False, count_draw_points: int = 1):
+        """Processes the frame for VIM operations.
+        
+        Args:
+            frame_original (np.ndarray): Original image frame.
+            is_segmentaion_show (bool, optional): Displays segmentation. Defaults to False.
+            is_draw_rectangle (bool, optional): Draws rectangle. Defaults to False.
+            is_draw_points (bool, optional): Draws points. Defaults to False.
+            count_draw_points (int, optional): Count of points to draw. Defaults to 1.
+            
+        Returns:
+            tuple: Sorted merged points array, resulting frame, and the center pixels.
+        """
         frame_result = frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
         ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
 
-        # Найти контуры
+        # Find contours
         cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-        # Найти самый большой контур (прямоугольник)
+        # Find the largest contour (rectangle)
         max_area = 0
         max_contour = None
 
@@ -149,9 +212,9 @@ class SegmentationBase:
                 max_area = area
                 max_contour = c
 
-        # Получить ограничивающий прямоугольник
+        # Get bounding rectangle
         x, y, w, h = cv2.boundingRect(max_contour)
-        # Условие если новый прямоугольник отличается больше, чем на 10 процентов, тогда мы заменяем значения
+        # Update values if the new rectangle differs by more than 10 percent
         if abs((x - self.crop_x) / (x + self.crop_x)) > 0.1 or abs((y - self.crop_y) / (y + self.crop_y)) > 0.1:
             self.crop_x, self.crop_y, self.crop_w, self.crop_h = x, y, w, h
 
@@ -160,16 +223,16 @@ class SegmentationBase:
         mask = thresh[y:y + h, x:x + w]
         cropped[mask == 0] = 255
 
-        # Применить медианный фильтр с ядром размером 3x3
+        # Apply median filter with 3x3 (5x5 requested) kernel
         cropped = cv2.medianBlur(cropped, 5)
 
         ret_th, thresh = cv2.threshold(cropped, 0, 255, cv2.THRESH_OTSU)
 
-        # Найти контуры
+        # Find contours
         cnts = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-        # Найти самый большой контур (прямоугольник)
+        # Find the largest contour (rectangle)
         area_list = []
 
         for c in cnts:
@@ -210,17 +273,17 @@ class SegmentationBase:
                 # print(IndexError)
                 return [], frame_original, 0
         cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
-        # Создание графика с точками
-        # Транспонирование массива
+        # Create a graph with points
+        # Array transposition
         cv2.drawContours(cropped, sorted_area_list[-1][1], -1, (0, 255, 0), 2)
         xy_array = sorted_area_list[-1][1]
 
         transposed_array = np.transpose(xy_array)
 
-        # Разделение транспонированного массива на два массива
+        # Split transposed array into two arrays
         split_array = np.split(transposed_array, 2)
 
-        # Преобразование каждого массива в одномерный
+        # Convert each array to 1D
         x_array: np.array = split_array[0].flatten()
         y_array: np.array = split_array[1].flatten()
 
@@ -230,10 +293,10 @@ class SegmentationBase:
         y_array += y_2
 
         merged_array = np.hstack((x_array.reshape(-1, 1), y_array.reshape(-1, 1)))
-        # Получаем индексы отсортированных значений x
+        # Get sorted x indices
         sorted_indices = np.argsort(merged_array[:, 0])
 
-        # Сортируем merged_array по значениям x
+        # Sort merged_array by x values
         sorted_merged_array = merged_array[sorted_indices]
 
         x, y, w, h = x + x_2, y + y_2, w, h
@@ -264,15 +327,25 @@ class SegmentationBase:
         return sorted_merged_array, frame_result, center_bubbles_px
 
     def frame_processing(self, frame_original, draw_rect=False, draw_segm=False):
+        """Processes a frame to detect bubbles and returns coordinates.
+
+        Args:
+            frame_original (np.ndarray): Original image frame.
+            draw_rect (bool, optional): Whether to draw a rectangle. Defaults to False.
+            draw_segm (bool, optional): Whether to draw segmentation. Defaults to False.
+
+        Returns:
+            tuple: Array of x values, array of y values, output frame, and bubble center in px.
+        """
         frame_result = frame_original.copy()
         frame = cv2.cvtColor(frame_original, cv2.COLOR_BGR2GRAY)
         ret_th, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
 
-        # Найти контуры
+        # Find contours
         cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-        # Найти самый большой контур (прямоугольник)
+        # Find largest contour (rectangle)
         max_area = 0
         max_contour = None
 
@@ -282,9 +355,9 @@ class SegmentationBase:
                 max_area = area
                 max_contour = c
 
-        # Получить ограничивающий прямоугольник
+        # Get bounding rectangle
         x, y, w, h = cv2.boundingRect(max_contour)
-        # Условие если новый прямоугольник отличается больше, чем на 10 процентов, тогда мы заменяем значения
+        # Verify if new rectangle differs by > 10% to replace values
         if abs((x - self.crop_x) / (x + self.crop_x)) > 0.1 or abs((y - self.crop_y) / (y + self.crop_y)) > 0.1:
             self.crop_x, self.crop_y, self.crop_w, self.crop_h = x, y, w, h
 
@@ -297,17 +370,17 @@ class SegmentationBase:
         # frame_copy = frame.copy()
 
         # cv2.imshow("frame", frame)
-        # Применить медианный фильтр с ядром размером 3x3
+        # Apply median filter with 5x5 kernel
         cropped = cv2.medianBlur(cropped, 5)
 
         ret_th, thresh = cv2.threshold(cropped, 0, 255, cv2.THRESH_OTSU)
 
-        # Найти контуры
+        # Find contours
         cnts = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         # thresh = cv2.medianBlur(thresh, 5)
 
-        # Найти самый большой контур (прямоугольник)
+        # Find largest contour (rectangle)
         max_area = 0
         max_area_2 = 0
         max_contour = None
@@ -331,17 +404,17 @@ class SegmentationBase:
         cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 1)
         # x, y, w, h = cv2.boundingRect(sorted_area_list[-3][1])
         # cv2.rectangle(cropped, (x, y), (x + w, y + h), (0, 0, 0), 2)
-        # Создание графика с точками
-        # Транспонирование массива
+        # Create a graph with points
+        # Array transposition
         cv2.drawContours(cropped, sorted_area_list[-3][1], -1, (0, 255, 0), 2)
         xy_array = sorted_area_list[-3][1]
 
         condition = xy_array[1] < 65
 
-        # находим индексы элементов, которые соответствуют условию
+        # find target indices
         indices = np.where(condition)[0]
 
-        # удаляем элементы из массива A по найденным индексам
+        # remove elements from array A by identified indices
         # xy_array = np.delete(xy_array, indices)
         # new_xy_array = np.array([])
         # for xy in xy_array:
@@ -355,28 +428,28 @@ class SegmentationBase:
         # np.savetxt('data.csv', reshaped_data, delimiter=',')
         transposed_array = np.transpose(xy_array)
 
-        # Разделение транспонированного массива на два массива
+        # Split transposed array into two arrays
         split_array = np.split(transposed_array, 2)
 
-        # Преобразование каждого массива в одномерный
+        # Convert each array to 1D
         x_array: np.array = split_array[0].flatten()
         y_array: np.array = split_array[1].flatten()
         # plt.scatter(x_array, y_array)
-        # plt.xlabel('X')  # подпись оси x
-        # plt.ylabel('Y')  # подпись оси y
-        # plt.title('Scatter Plot')  # заголовок графика
-        # plt.grid(True)  # включение сетки
-        # plt.show()  # вывод графика
+        # plt.xlabel('X')  # X axis label
+        # plt.ylabel('Y')  # Y axis label
+        # plt.title('Scatter Plot')  # plot title
+        # plt.grid(True)  # Grid enable
+        # plt.show()  # Display plot
 
         # cv2.imshow("frame_copy", cropped)
         # cv2.imshow("frame2", thresh)
-        # Обрезка каждого канала отдельно
+        # Cropping each channel separately
         x_2, y_2, w_2, h_2 = self.crop_x, self.crop_y, self.crop_w, self.crop_h
         # cropped_blue = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 0]  # Blue channel
         # cropped_green = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 1]  # Green channel
         # cropped_red = frame_original[y_2:y_2 + h_2, x_2:x_2 + w_2, 2]  # Red channel
         #
-        # # Объединение каналов в цветное изображение
+        # # Channels merge to color image
         # cropped_color = cv2.merge([cropped_blue, cropped_green, cropped_red])
         x, y, w, h = x + x_2, y + y_2, w, h
         if draw_rect and draw_segm:

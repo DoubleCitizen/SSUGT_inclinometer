@@ -9,10 +9,12 @@ from classes.segmentation_base import SegmentationBase
 
 
 class VideoPlayer(QThread):
+    """Background thread to process arbitrary video frames testing."""
     frameChanged = Signal(QImage)
     seekRequested = Signal(int)
 
     def __init__(self, video_path):
+        """Initializes the background testing video thread."""
         super().__init__()
         self.video_path = video_path
         self.cap = cv2.VideoCapture(video_path)
@@ -22,6 +24,7 @@ class VideoPlayer(QThread):
         self.seekRequested.connect(self.seek)
 
     def run(self):
+        """Processes target video buffer sequentially emitting segments."""
         while True:
             self.mutex.lock()
 
@@ -48,6 +51,7 @@ class VideoPlayer(QThread):
             self.msleep(30)  # Approximately 30 FPS
 
     def seek(self, pos):
+        """Navigates the internal CV2 capture state to specific timestamps/frames."""
         self.mutex.lock()
         try:
             self.cap.release()
@@ -63,7 +67,9 @@ class VideoPlayer(QThread):
 
 
 class MainWindow(QWidget):
+    """Main window embedding local video testing UI features."""
     def __init__(self, video_path):
+        """Instantiates default configurations loading given testing path."""
         super().__init__()
 
         self.video_path = video_path
@@ -103,9 +109,11 @@ class MainWindow(QWidget):
         self.video_player.start()
 
     def update_frame(self, q_img):
+        """Transposes incoming QImage signals into widget display mapping."""
         self.label.setPixmap(QPixmap.fromImage(q_img).scaled(640, 480, Qt.KeepAspectRatio))
 
     def seek_frame(self, pos):
+        """Issues command forcing testing track sequences towards pos."""
         self.video_player.seekRequested.emit(pos)
 
 

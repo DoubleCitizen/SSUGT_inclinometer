@@ -15,15 +15,21 @@ from classes.value_saver import FileSaver
 segmentation = SegmentationBase()
 
 def start_processing(file_path: str, start_point_px: Optional[float] = None):
+    """Starts the video processing for the laser to detect and save coordinates.
+    
+    Args:
+        file_path (str): The video input file name or path.
+        start_point_px (Optional[float], optional): Optional start point in pixels to shift coordinate limits. Defaults to None.
+    """
 
     if start_point_px is not None:
         CoordinateSystemOffset.set_start_position(start_point_px)
 
-    # Установка имени видеофайла
+    # Set video file name
     video_input_file_name = file_path
 
 
-    # Создание объекта для чтения видео
+    # Create object to read video
     try:
         video = cv2.VideoCapture(video_input_file_name)
     except:
@@ -32,7 +38,7 @@ def start_processing(file_path: str, start_point_px: Optional[float] = None):
     total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
     file_saver = FileSaver()
 
-    # Проверка на успешное открытие видеофайла
+    # Check if video file opened successfully
     if not video.isOpened():
         print("Could not open video")
         sys.exit()
@@ -44,11 +50,11 @@ def start_processing(file_path: str, start_point_px: Optional[float] = None):
     time_sec_sum = 0
 
     while True:
-        # Чтение кадра из видео
+        # Read frame from video
         time_2 = time.time()
         ok, frame = video.read()
 
-        # Если кадр не может быть прочитан, то видео закончилось
+        # If frame cannot be read, video has ended
         if not ok:
             break
         center_bubbles_px = None
@@ -67,7 +73,7 @@ def start_processing(file_path: str, start_point_px: Optional[float] = None):
 
         remaining_percentage = 100 - ((total_frames - current_frame) / total_frames * 100)
         remaining_time = (time_sec_sum / current_frame) * (total_frames - current_frame)
-        print(f"\rОставшееся время: {remaining_time:.2f} сек. {remaining_percentage:.2f}%", end="")
+        print(f"\rRemaining time: {remaining_time:.2f} sec. {remaining_percentage:.2f}%", end="")
         # time.sleep(0.0000000001)
 
         if not is_first_frame:
@@ -84,28 +90,28 @@ def start_processing(file_path: str, start_point_px: Optional[float] = None):
             [formatted_time, center_bubbles_px, str(points)])
         time_sec_sum += time.time() - time_2
 
-    print(f"\rВремя заняло = {(time.time() - time_1):.2f} секунд", end="")
+    print(f"\rTime taken = {(time.time() - time_1):.2f} seconds", end="")
 
-    # Освобождение ресурсов
+    # Release resources
     video.release()
 
 
 # if __name__ == "__main__":
 #     start_processing("C:\\Users\\26549\\PycharmProjects\\SSUGT_inclinometer\\3.mp4", 1, None)
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Обработка видеофайла для анализа пузырьков.")
+    parser = argparse.ArgumentParser(description="Video file processing for bubble analysis.")
 
-    # Позиционный аргумент: путь к видеофайлу
-    parser.add_argument("--file_path", type=str, help="Путь к видеофайлу (тип данных: str)")
+    # Positional argument: path to video file
+    parser.add_argument("--file_path", type=str, help="Path to video file (data type: str)")
 
-    # Опциональные аргументы
+    # Optional arguments
     parser.add_argument("--start_point_px", type=float, default=None,
-                        help="Начальная позиция в пикселях (тип данных: float, по умолчанию: None)")
+                        help="Start position in pixels (data type: float, default: None)")
 
-    # Парсим аргументы
+    # Parse arguments
     args = parser.parse_args()
 
-    # Запускаем обработку
+    # Start processing
     start_processing(
         file_path=args.file_path,
         start_point_px=args.start_point_px

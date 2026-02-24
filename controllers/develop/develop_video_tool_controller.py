@@ -13,12 +13,14 @@ from ui import develop_video_tool
 
 
 class VideoPlayer(QThread):
+    """Worker thread handling local video playback and framing."""
     frameChanged = Signal(np.ndarray, np.ndarray)
     seekRequested = Signal(int)
     pause_video_signal = Signal()
     start_video_signal = Signal()
 
     def __init__(self, horizontalSlider_video, video_path=None):
+        """Initializes the video playback thread."""
         super().__init__()
         self._is_seek_changed = False
         self._is_pause_video = False
@@ -38,12 +40,14 @@ class VideoPlayer(QThread):
         self.start_video_signal.connect(self.start_video)
 
     def set_video(self, video_path):
+        """Sets target video path for playback."""
         self.video_path = video_path
         self.cap = cv2.VideoCapture(self.video_path)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.horizontalSlider_video.setRange(0, self.total_frames - 1)
 
     def run(self):
+        """Executes the playback loop extracting and dispatching frames."""
         while True:
             if not self.cap or self._is_seek_changed or self._is_pause_video:
                 time.sleep(0.1)
@@ -62,12 +66,15 @@ class VideoPlayer(QThread):
                 self.frameChanged.emit(frame_original, frame)
             self.mutex_1.unlock()
     def pause_video(self):
+        """Pauses the video playback thread loop."""
         self._is_pause_video = True
 
     def start_video(self):
+        """Unpauses video playback."""
         self._is_pause_video = False
 
     def seek(self, pos):
+        """Hunts for a precise frame sequence in target format."""
         self.mutex_2.lock()
         self._is_seek_changed = True
         if not self.cap:
@@ -88,11 +95,14 @@ class VideoPlayer(QThread):
 
 
 class Ui_MainWindow(QMainWindow, develop_video_tool.Ui_MainWindow):
+    """Interface layer containing offline video tracking configuration."""
     def __init__(self):
+        """Initializes controller variables mapping state hooks."""
         self._is_pause_video = False
         super(Ui_MainWindow, self).__init__()
 
     def setupUi(self, MainWindow):
+        """Maps default settings to UI layout structure elements."""
         super().setupUi(MainWindow)
         self._is_pause_video = False
         self.MainWindow = MainWindow
@@ -105,16 +115,20 @@ class Ui_MainWindow(QMainWindow, develop_video_tool.Ui_MainWindow):
         self.add_functions()
 
     def combobox_initialize(self):
-        self.comboBox_detectors.addItem("Детектор пузырька V1")
+        """Bootstraps available dropdown option presets."""
+        self.comboBox_detectors.addItem("Bubble detector V1")
 
     def update_frame(self, frame_original: np.ndarray, frame: np.ndarray):
+        """Binds incoming OpenCV frames through QGraphics mapping layers."""
         self.graphicsView_original_video.image_cv(frame_original)
         self.graphicsView_segm_video.image_cv(frame)
 
     def pause_video_from_slider(self):
+        """Intercepts trackbar manual interactions to pause sequence output."""
         self.video_player.pause_video()
 
     def seek_frame(self):
+        """Directs the track sequence controller to a newly specified frame count target."""
         # time.sleep(1)
         # threading.Thread(self.video_player.seek(pos)).start()
         self.video_player.seekRequested.emit(self.horizontalSlider_video.value())
@@ -122,6 +136,7 @@ class Ui_MainWindow(QMainWindow, develop_video_tool.Ui_MainWindow):
             self.start_video()
 
     def add_functions(self):
+        """Sets hook bounds onto globally required configurations layers."""
         self.pushButton_select_path.clicked.connect(lambda: self.get_save_path())
         self.pushButton_pause_video.clicked.connect(lambda: self.pause_video())
         self.pushButton_start_video.clicked.connect(lambda: self.start_video())
@@ -131,21 +146,21 @@ class Ui_MainWindow(QMainWindow, develop_video_tool.Ui_MainWindow):
         GlobalController.set_spinBox_points(self.spinBox)
 
     def start_video(self):
+        """Modifies interaction limits resetting playback active flag statuses."""
         self._is_pause_video = False
         self.pushButton_pause_video.setDisabled(False)
         self.pushButton_start_video.setDisabled(True)
         self.video_player.start_video_signal.emit()
 
     def pause_video(self):
+        """Haults target player thread looping until specifically unpaused."""
         self._is_pause_video = True
         self.pushButton_pause_video.setDisabled(True)
         self.pushButton_start_video.setDisabled(False)
         self.video_player.pause_video_signal.emit()
 
     def get_save_path(self):
-        """
-        Вставка пути где будет создан новый проект
-        """
+        """Injects path where a newly selected clip configuration projects defaults from."""
 
         self.save_path, _ = QFileDialog.getOpenFileNames(None, "Открытие видеофайла", str(os.getcwd()),
                                                          "Все файлы (*.*)")

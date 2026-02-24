@@ -11,12 +11,19 @@ from classes.value_saver import FileSaver
 segmentation = SegmentationBase()
 
 def start_processing(file_path, signal_progressbar, signal_time_label):
+    """Starts post-processing pipeline for a given video file.
+    
+    Args:
+        file_path (str): Target video file to process.
+        signal_progressbar: PySide Signal for emitting progress percentages.
+        signal_time_label: PySide Signal for emitting remaining time predictions.
+    """
 
-    # Установка имени видеофайла
+    # Set video file name
     video_input_file_name = file_path
 
 
-    # Создание объекта для чтения видео
+    # Create object to read video
     try:
         video = cv2.VideoCapture(video_input_file_name)
     except:
@@ -25,7 +32,7 @@ def start_processing(file_path, signal_progressbar, signal_time_label):
     total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
     file_saver = FileSaver()
 
-    # Проверка на успешное открытие видеофайла
+    # Check for successful video opening
     if not video.isOpened():
         print("Could not open video")
         signal_progressbar.emit(400)
@@ -38,11 +45,11 @@ def start_processing(file_path, signal_progressbar, signal_time_label):
     time_sec_sum = 0
 
     while True:
-        # Чтение кадра из видео
+        # Read frame from video
         time_2 = time.time()
         ok, frame = video.read()
 
-        # Если кадр не может быть прочитан, то видео закончилось
+        # If frame cannot be read, then video is over
         if not ok:
             break
         center_bubbles_px = None
@@ -61,10 +68,10 @@ def start_processing(file_path, signal_progressbar, signal_time_label):
         remaining_percentage = 100 - ((total_frames - current_frame) / total_frames * 100)
         remaining_time = (time_sec_sum / current_frame) * (total_frames - current_frame)
         signal_time_label.emit(remaining_time)
-        # print(f"Оставшееся время: {remaining_time:.2f} секунд")
+        # print(f"Remaining time: {remaining_time:.2f} seconds")
         time.sleep(0.0000000001)
 
-        # print(f"Оставшиеся кадры: {remaining_percentage:.2f}%")
+        # print(f"Remaining frames: {remaining_percentage:.2f}%")
         signal_progressbar.emit(round(remaining_percentage))
 
         if not is_first_frame:
@@ -81,8 +88,8 @@ def start_processing(file_path, signal_progressbar, signal_time_label):
             [formatted_time, center_bubbles_px, str(points)])
         time_sec_sum += time.time() - time_2
 
-    print(f"Время заняло = {time.time() - time_1} секунд")
+    print(f"Time taken = {time.time() - time_1} seconds")
 
-    # Освобождение ресурсов
+    # Resource release
     video.release()
     signal_progressbar.emit(400)

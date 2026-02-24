@@ -11,7 +11,21 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
 
 class QGraphicsViewPlot(QtWidgets.QGraphicsView):
+    """Custom QGraphicsView for embedding a matplotlib plot.
+    
+    Attributes:
+        scene (QGraphicsScene): The scene containing the plot.
+        figure (plt.Figure): The matplotlib figure.
+        ax (plt.Axes): The matplotlib axes.
+        canvas (FigureCanvasQTAgg): The canvas widget.
+        proxy (QGraphicsProxyWidget): Proxy widget to host the canvas in the scene.
+    """
     def __init__(self, parent=None):
+        """Initializes the QGraphicsViewPlot with a matplotlib figure.
+        
+        Args:
+            parent (QWidget, optional): Parent widget. Defaults to None.
+        """
         super().__init__(parent)
 
         # Create a QGraphicsScene
@@ -31,33 +45,41 @@ class QGraphicsViewPlot(QtWidgets.QGraphicsView):
 
     @QtCore.Slot(float, float, float)
     def draw_parabola(self, a, b, c):
-        # Коэффициенты параболы
+        """Draws a parabola based on the general quadratic equation.
+        
+        Args:
+            a (float): Coefficient a (x^2 term).
+            b (float): Coefficient b (x term).
+            c (float): Constant c.
+        """
+        # Parabola coefficients
         self.ax.clear()
 
-        # Генерация значений x
+        # Generate x values
         D = abs(b ** 2 - 4 * a * c)
         x1 = (-b ** 2 - math.sqrt(D)) / (2 * a)
         x2 = (-b ** 2 + math.sqrt(D)) / (2 * a)
         x = np.linspace(x1, x2, 400)
 
-        # Вычисление значений y по общему уравнению параболы
+        # Calculate y values using the general parabola equation
         y = a * x ** 2 + b * x + c
 
-        # Построение параболы
+        # Plot parabola
         self.ax.plot(x, y, label=f'{a}x^2 + {b}x + {c}')
         #
-        # # Добавление заголовка и подписей осей
-        self.ax.set_title('Парабола: общее уравнение')
+        # # Add title and axis labels
+        self.ax.set_title('Parabola: General Equation')
         self.ax.set_xlabel('x')
         self.ax.set_ylabel('y')
 
-        # Обновление холста
+        # Update canvas
         self.canvas.draw()
 
         # Ensure the event loop continues
         QtWidgets.QApplication.processEvents()
 
     def update_plot(self):
+        """Updates the plot display with the current image map (deprecated/placeholder method)."""
         self.scene.clear()
         if self.qImg is not None:
             self.pixmap = QPixmap.fromImage(self.qImg)

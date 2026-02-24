@@ -2,9 +2,16 @@ import os
 import json
 
 class ConfigController:
+    """Manages simple JSON configuration serialization and directory initialization.
+    
+    Attributes:
+        path_to_project (str): Target filesystem path for the JSON config file.
+    """
     def __init__(self, path_to_project: str):
-        """
-        :param path_to_project: путь к файлу json, в котором будет происходить сериализация/десериализация
+        """Initializes controller, creates directories and creates empty JSON if missing.
+        
+        Args:
+            path_to_project (str): Path to the JSON configuration file to be managed.
         """
         self.path_to_project = path_to_project
         if self.path_to_project is None:
@@ -17,9 +24,7 @@ class ConfigController:
                 json.dump({}, f)
 
     def generate_directories(self):
-        """
-        Сгенерировать директории, для того чтобы была возможность записать туда файл
-        """
+        """Generates directories up to the config file path if they don't exist."""
         path_result = ''
         if self.path_to_project.rfind('.') != -1:
             path_without_file = self.path_to_project.split('/')[0:len(self.path_to_project.split('/')) - 1]
@@ -31,9 +36,10 @@ class ConfigController:
                 os.makedirs(path_result, exist_ok=False)
 
     def _load_or_create(self):
-        """
-        Подгружает данные из файла json или создает его пустым, если он отсутствует.
-        :return: загруженные данные
+        """Loads data from the JSON file or creates it empty if missing.
+        
+        Returns:
+            dict or list: The loaded configuration data.
         """
         if self.path_to_project is None:
             return {}
@@ -50,17 +56,19 @@ class ConfigController:
             return {}
 
     def load(self) -> dict | list:
-        """
-        :return: Данные (dict | list)
-        Загрузка данных из файла json (dict | list)
+        """Loads data from the JSON configuration file.
+        
+        Returns:
+            dict | list: The data extracted from the configuration file.
         """
         data = self._load_or_create()
         return data
 
     def save(self, data: dict | list):
-        """
-        :param data: Входные данные (dict | list)
-        Сохранение данных в файл json (dict | list)
+        """Saves data back to the JSON configuration file.
+        
+        Args:
+            data (dict | list): Content to store persistently.
         """
         if self.path_to_project is None:
             return

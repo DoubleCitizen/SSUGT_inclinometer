@@ -2,6 +2,10 @@ from PySide6.QtWidgets import QCheckBox, QSpinBox, QLabel, QPushButton
 
 
 class GlobalController:
+    """Central repository for static references to UI elements and dynamic state queries.
+    
+    Provides simple getters/setters and status verification across the application lifecycle.
+    """
     _checkBox_rectangle_show: None | QCheckBox = None
     _checkBox_segmentaion_show: None | QCheckBox = None
     _checkBox_enable_record: None | QCheckBox = None
@@ -19,10 +23,12 @@ class GlobalController:
 
     @classmethod
     def get_push_button_start_stream(cls) -> QPushButton:
+        """Gets reference to the start stream push button."""
         return cls._pushButton_start_stream
 
     @classmethod
     def set_push_button_start_stream(cls, pushButton_start_stream: QPushButton):
+        """Sets reference to start stream push button."""
         cls._pushButton_start_stream = pushButton_start_stream
 
     @classmethod
@@ -39,6 +45,7 @@ class GlobalController:
 
     @classmethod
     def get_status_esp_icon(cls) -> QLabel:
+        """Gets the reference for ESP status icon UI label."""
         return cls._status_esp_icon
 
     @classmethod
@@ -89,6 +96,7 @@ class GlobalController:
 
     @classmethod
     def get_count_draw_points(cls) -> int:
+        """Gets currently requested count of drawn points."""
         return cls.get_spinBox_points().value()
 
     @classmethod
@@ -113,6 +121,7 @@ class GlobalController:
 
     @classmethod
     def is_draw_rectangle(cls):
+        """Checks if drawing rectangles is toggled active."""
         if cls._checkBox_rectangle_show is None:
             return False
         return cls._checkBox_rectangle_show.isChecked()
@@ -137,6 +146,7 @@ class GlobalController:
 
     @classmethod
     def is_draw_start_position(cls) -> bool:
+        """Checks if drawing the start position marker is enabled."""
         if cls._checkBox_start_position is None:
             return False
         return cls._checkBox_start_position.isChecked()

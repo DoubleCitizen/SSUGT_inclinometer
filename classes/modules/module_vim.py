@@ -17,7 +17,9 @@ from classes.segmentation_base import SegmentationBase
 
 
 class ModuleESP32:
+    """Manages ESP32 stream operations acting as an asynchronous bridge to OpenCV processing loops."""
     def __init__(self, source: str | None = None, type_device: TypeDevices = TypeDevices.ESP32_VIM):
+        """Initializes multiprocessing variables and queues tying threads resolving IO bounds."""
         self._x = None
         self._y = None
         self._source: None | str = source
@@ -44,113 +46,139 @@ class ModuleESP32:
 
     @property
     def x(self):
+        """Retrieves raw horizontal calculation offset."""
         return self._x
 
     @property
     def y(self):
+        """Retrieves raw vertical calculation offset."""
         return self._y
 
     @property
     def is_segmentation(self):
+        """Checks boolean condition requesting live polygon overlay mapping."""
         if self._is_segmentation is None:
             return GlobalController.is_segmentaion_show()
         return self._is_segmentation
 
     @property
     def is_draw_rectangle(self):
+        """Checks boolean condition requesting live bounding box overlay."""
         if self._is_draw_rectangle is None:
             return GlobalController.is_draw_rectangle()
         return self._is_draw_rectangle
 
     @property
     def is_draw_point(self):
+        """Checks boolean condition requesting localized points rendered in overlay."""
         if self._is_draw_point is None:
             return GlobalController.is_draw_points()
         return self._is_draw_point
 
     @property
     def count_draw_points(self):
+        """Retrieves targeted maximum historical points rendered."""
         if self._count_draw_points is None:
             return GlobalController.get_count_draw_points()
         return self._count_draw_points
 
     @property
     def is_draw_start_position(self):
+        """Checks condition overlaying initial calibrated origin bounding vectors."""
         if self._is_draw_start_position is None:
             return GlobalController.is_draw_start_position()
         return self._is_draw_start_position
 
     @is_segmentation.setter
     def is_segmentation(self, is_segmentation):
+        """Sets live polygon overlay mapping logic flag."""
         self._is_segmentation = is_segmentation
 
     @is_draw_rectangle.setter
     def is_draw_rectangle(self, is_draw_rectangle):
+        """Sets tracking request to bounded tracking rectangles."""
         self._is_draw_rectangle = is_draw_rectangle
 
     @is_draw_point.setter
     def is_draw_point(self, is_draw_point):
+        """Sets tracking request rendering dots on center coordinates."""
         self._is_draw_point = is_draw_point
 
     @count_draw_points.setter
     def count_draw_points(self, count_draw_points):
+        """Restricts drawn historical tail mapping length bound limit."""
         self._count_draw_points = count_draw_points
 
     @is_draw_start_position.setter
     def is_draw_start_position(self, is_draw_start_position):
+        """Locks mapping cross indicating specific offset calibrated anchor."""
         self._is_draw_start_position = is_draw_start_position
 
     @property
     def frame_original(self) -> np.ndarray:
+        """Retrieves raw unmodified pixel block pulled by streams."""
         return self._frame_original
 
     @property
     def is_camera(self) -> bool:
+        """Returns boolean flag specifying sensor origin type capabilities."""
         return self._is_camera
 
     @property
     def points(self) -> list:
+        """Retrieves calculated contour arrays bounded to localized centers."""
         return self._points
 
     @property
     def center_bubbles_px(self) -> float:
+        """Calculates specific displacement mapped by px ranges."""
         return self._center_bubbles_px
 
     @property
     def esp32_name(self) -> str:
+        """Fetches bound ESP32 system alias resolving configurations."""
         return self._esp32_name
 
     @property
     def fps(self) -> int:
+        """Retrieves calculated throughput frequency rate bounds."""
         return self._fps
 
     @property
     def frame(self) -> np.ndarray:
+        """Retrieves composited buffer output frame with overlays applied."""
         return self._frame
 
     @property
     def source(self) -> str:
+        """Returns target connection path formatting bound string identifier."""
         return self._source
 
     @source.setter
     def source(self, source: str):
+        """Sets connection string targeting capture endpoints."""
         self._source = source
 
     @property
     def is_streaming(self):
+        """Checks if asynchronous extraction tasks currently execute active loops."""
         return self._is_streaming
 
     @is_streaming.setter
     def is_streaming(self, is_streaming):
+        """Sets asynchronous capture execution boolean limit loops."""
         self._is_streaming = is_streaming
 
     def set_source(self, source: str):
+        """Stores source URL strings mapping connection layouts."""
         self._source = source
 
     def clear_source(self):
+        """Detaches streaming connections clearing mapped configurations contexts."""
         self._source = None
 
     def start_stream(self):
+        """Spawns process boundary routines beginning target sequence extraction."""
         self._is_streaming = True
 
         data_api_controller = DevicesController.get_vim_api_class().get_all_data()
@@ -161,10 +189,12 @@ class ModuleESP32:
         self.esp32_process.start()
 
     def stop_stream(self):
+        """Terminate process boundary loops dropping streaming connection objects."""
         self._is_streaming = False
         self.esp32_process.terminate()
 
     def _prepare_send_data(self):
+        """Polls interface flags submitting state update events mapping."""
         is_segmentation = False
         is_draw_rectangle = False
         is_draw_point = False
@@ -191,11 +221,13 @@ class ModuleESP32:
                                 is_draw_start_position)
 
     def _send_data(self, is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position):
+        """Pushes data across IPC constraints pushing rendering logic constraints."""
         self.module_parent_conn.send(
             ((is_segmentation, is_draw_rectangle, is_draw_point, count_draw_points, is_draw_start_position),
              ProcessVIM.DRAW_OPTIONS))
 
     def update_data(self):
+        """Polls active multiprocessing endpoints flushing pending synchronization messages."""
         if self.module_parent_conn.poll():
             value, type_data = self.module_parent_conn.recv()
             match type_data:
@@ -212,6 +244,7 @@ class ModuleESP32:
 
     @staticmethod
     def processing_vim(conn, sync_conn, segmentation: SegmentationBase, data_api_controller, source, type_device: TypeDevices):
+        """Dedicated IO polling routine binding computer frames locally mapping pipeline transformations."""
         vim_process_id = -1
         DevicesController.get_vim_api_class().set_all_data(data_api_controller)
         DevicesController.get_vim_api_class().check_is_video_capture(source)
@@ -263,6 +296,7 @@ class ModuleESP32:
                         return
 
     def get_esp32_name(self):
+        """Fetches active bound controller module alias resolving connection statuses."""
         if not DevicesController.get_vim_api_class().get_is_video_capture():
             self._esp32_name = json.loads(DevicesController.get_vim_api_class().get_name().content).get("name", "esp32")
         if self._esp32_name is None:
@@ -274,6 +308,7 @@ class ModuleESP32:
 
     @staticmethod
     def connection_is_missing(esp32_name):
+        """Logs dropped connection status modifying central connection indicator layouts."""
         logging.info(f"Разорвано соединение с ВИМ: {esp32_name}")
         text_status = f"Разорвано соединение с ВИМ: {esp32_name}"
         icon = QIcon(u":/resource/resource/close.png")
@@ -284,6 +319,7 @@ class ModuleESP32:
 
     @staticmethod
     def connection_is_good(esp32_name):
+        """Logs positive connection statuses modifying layouts matching connected state symbols."""
         logging.info(f"Успешное соединение с ВИМ: {esp32_name}")
         text_status = f"Успешное соединение с ВИМ: {esp32_name}"
         icon = QIcon(u":/resource/resource/check.png")

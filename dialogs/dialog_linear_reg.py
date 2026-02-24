@@ -5,12 +5,15 @@ from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton
 
 class InputDialog(QDialog):
+    """Dialog querying manual offsets and parameters for the linear regression."""
     def __init__(self):
+        """Spawns dialog structure bounds."""
         super().__init__()
 
         self.initUI()
 
     def initUI(self):
+        """Maps default interactive elements into rendering engine layouts."""
         layout = QVBoxLayout()
         value_a = None
         value_b = None
@@ -66,11 +69,13 @@ class InputDialog(QDialog):
 
     @staticmethod
     def create_directory(folder_path):
+        """Asserts hierarchy conditions applying overrides when absent."""
         if os.path.exists(folder_path) and os.path.isdir(folder_path):
             return
         else:
             os.makedirs(folder_path)
     def submit(self):
+        """Applies input values towards system configurations."""
         # Получение значений
         value_a = self.input_a.text()
         value_b = self.input_b.text()

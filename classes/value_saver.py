@@ -3,22 +3,36 @@ from datetime import datetime
 
 
 class FileSaver:
+    """Handles formatting and writing data exports (such as CSV).
+    
+    Attributes:
+        sep (str): Delimiter character. Defaults to ';'.
+        filename (str): Name of output.
+    """
     def __init__(self):
+        """Initializes empty delimiter contexts bounding configuration."""
         self.sep = ';'
 
     @staticmethod
     def create_directory(folder_path):
+        """Asserts hierarchy conditions applying overrides when absent."""
         if os.path.exists(folder_path) and os.path.isdir(folder_path):
             return
         else:
             os.makedirs(folder_path)
 
     def initialize(self, headers, sep=';'):
-        # Получение текущего времени
+        """Sets up file destination and writes table headers.
+        
+        Args:
+            headers (list): Columns available over exported context.
+            sep (str): String delimiter default (';').
+        """
+        # Get current time
         current_time = datetime.now()
         self.sep = sep
 
-        # Форматирование времени в строку в нужном формате
+        # Format time into formatted string target
         formatted_time = current_time.strftime("%Y_%m_%d %H_%M_%S")
         current_directory = os.getcwd()
         self.create_directory(current_directory.replace('\\', '/') + '/data')
@@ -34,6 +48,11 @@ class FileSaver:
             file.write('\n')
 
     def write_data(self, data: list):
+        """Append one row directly into prepared CSV.
+        
+        Args:
+            data (list): List sequentially wrapping variables.
+        """
         with open(self.filename, 'a') as file:
             for i, value in enumerate(data):
                 if len(data) - 1 == i:
